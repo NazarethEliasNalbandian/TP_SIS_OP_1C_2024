@@ -16,8 +16,8 @@ void atender_signal(t_pcb* pcb,char* recurso_a_liberar){
 		recurso_buscado->instancias ++;
 		log_info(kernel_log_debug, "PID: %d - Signal: %s - Instancias: %d", pcb->pid, recurso_buscado->recurso_name, recurso_buscado->instancias);
 
-		t_paquete* un_paquete = crear_super_paquete(ATENDER_RTA_KERNEL);
-        cargar_string_al_super_paquete(un_paquete,"1");
+		t_paquete* un_paquete = crear_paquete(ATENDER_RTA_KERNEL);
+        cargar_string_al_paquete(un_paquete,"1");
         enviar_paquete(un_paquete, fd_cpu_dispatch);
         eliminar_paquete(un_paquete);
 
@@ -26,8 +26,8 @@ void atender_signal(t_pcb* pcb,char* recurso_a_liberar){
 		}
     }
 	else{
-		t_paquete* un_paquete = crear_super_paquete(ATENDER_RTA_KERNEL);
-    	cargar_string_al_super_paquete(un_paquete,"-1");
+		t_paquete* un_paquete = crear_paquete(ATENDER_RTA_KERNEL);
+    	cargar_string_al_paquete(un_paquete,"-1");
         enviar_paquete(un_paquete, fd_cpu_dispatch);
         eliminar_paquete(un_paquete);
 		pcb->motivo_exit = INVALID_RESOURCE;
@@ -47,8 +47,8 @@ void atender_wait(t_pcb* pcb,char* recurso_solicitado){
 
 			log_info(kernel_log_debug, "PID: %d - Wait: %s - Instancias: %d", pcb->pid, recurso_buscado->recurso_name, recurso_buscado->instancias);
 
-			t_paquete* un_paquete = crear_super_paquete(ATENDER_RTA_KERNEL);
-            cargar_string_al_super_paquete(un_paquete, "1");
+			t_paquete* un_paquete = crear_paquete(ATENDER_RTA_KERNEL);
+            cargar_string_al_paquete(un_paquete, "1");
             enviar_paquete(un_paquete, fd_cpu_dispatch);
             eliminar_paquete(un_paquete);
 
@@ -61,8 +61,8 @@ void atender_wait(t_pcb* pcb,char* recurso_solicitado){
 
 			// NO HAY SUFICIENTES INSTANCIAS DE RECURSO
 			// ENVIAMOS -1 A CPU, PARA QUE DESALOJE EL PROCESO 
-            t_paquete* un_paquete = crear_super_paquete(ATENDER_RTA_KERNEL);
-            cargar_string_al_super_paquete(un_paquete, "-1");
+            t_paquete* un_paquete = crear_paquete(ATENDER_RTA_KERNEL);
+            cargar_string_al_paquete(un_paquete, "-1");
             enviar_paquete(un_paquete, fd_cpu_dispatch);
             eliminar_paquete(un_paquete);
 
@@ -83,8 +83,8 @@ void atender_wait(t_pcb* pcb,char* recurso_solicitado){
 		log_info(kernel_log_debug, "EL RECURSO NO FUE ENCONTRADO");
         transferir_from_actual_to_siguiente(pcb, lista_exit, mutex_lista_exit, EXIT);
 			
-        t_paquete* un_paquete = crear_super_paquete(ATENDER_RTA_KERNEL);
-        cargar_string_al_super_paquete(un_paquete, "-1");
+        t_paquete* un_paquete = crear_paquete(ATENDER_RTA_KERNEL);
+        cargar_string_al_paquete(un_paquete, "-1");
         enviar_paquete(un_paquete, fd_cpu_dispatch);
         eliminar_paquete(un_paquete);
 
@@ -695,19 +695,19 @@ void atender_io_fs_read(t_pcb* pcb,t_mochila* mochila, t_instancia_io* instancia
 
 void enviar_pcb_entradasalida_io_gen_sleep(int pid, int unidades_trabajo, int fd_instancia_entradasalida){
 
-	t_paquete* un_paquete = crear_super_paquete(PCB_SLEEP);
-	cargar_int_al_super_paquete(un_paquete, pid);
-	cargar_int_al_super_paquete(un_paquete, unidades_trabajo);
+	t_paquete* un_paquete = crear_paquete(PCB_SLEEP);
+	cargar_int_al_paquete(un_paquete, pid);
+	cargar_int_al_paquete(un_paquete, unidades_trabajo);
 	enviar_paquete(un_paquete, fd_instancia_entradasalida);
 	eliminar_paquete(un_paquete);
 }
 
 void enviar_pcb_entradasalida_io_stdin(int pid, size_t tamanio, int direccion_fisica, int fd_instancia_entradasalida){
 	
-	t_paquete* un_paquete = crear_super_paquete(PCB_STDIN);
-	cargar_int_al_super_paquete(un_paquete, pid);
-	cargar_size_t_al_super_paquete(un_paquete, tamanio);
-	cargar_int_al_super_paquete(un_paquete, direccion_fisica);
+	t_paquete* un_paquete = crear_paquete(PCB_STDIN);
+	cargar_int_al_paquete(un_paquete, pid);
+	cargar_size_t_al_paquete(un_paquete, tamanio);
+	cargar_int_al_paquete(un_paquete, direccion_fisica);
 
 	enviar_paquete(un_paquete, fd_instancia_entradasalida);
 	eliminar_paquete(un_paquete);
@@ -715,38 +715,38 @@ void enviar_pcb_entradasalida_io_stdin(int pid, size_t tamanio, int direccion_fi
 
 void enviar_pcb_entradasalida_io_stdout(int pid, size_t tamanio, int direccion_fisica, int fd_instancia_entradasalida){
 	
-	t_paquete* un_paquete = crear_super_paquete(PCB_STDOUT);
-	cargar_int_al_super_paquete(un_paquete, pid);
-	cargar_size_t_al_super_paquete(un_paquete, tamanio);
-	cargar_int_al_super_paquete(un_paquete, direccion_fisica);
+	t_paquete* un_paquete = crear_paquete(PCB_STDOUT);
+	cargar_int_al_paquete(un_paquete, pid);
+	cargar_size_t_al_paquete(un_paquete, tamanio);
+	cargar_int_al_paquete(un_paquete, direccion_fisica);
 
 	enviar_paquete(un_paquete, fd_instancia_entradasalida);
 	eliminar_paquete(un_paquete);
 }
 
 void enviar_pcb_entradasalida_io_fs_create(int pid, char* nombre_archivo, int fd_instancia_entradasalida){
-	t_paquete* un_paquete = crear_super_paquete(PCB_FS_CREATE);
-	cargar_int_al_super_paquete(un_paquete, pid);
-	cargar_string_al_super_paquete(un_paquete, nombre_archivo);
+	t_paquete* un_paquete = crear_paquete(PCB_FS_CREATE);
+	cargar_int_al_paquete(un_paquete, pid);
+	cargar_string_al_paquete(un_paquete, nombre_archivo);
 
 	enviar_paquete(un_paquete, fd_instancia_entradasalida);
 	eliminar_paquete(un_paquete);
 
 }
 void enviar_pcb_entradasalida_io_fs_delete(int pid, char* nombre_archivo, int fd_instancia_entradasalida){
-	t_paquete* un_paquete = crear_super_paquete(PCB_FS_DELETE);
-	cargar_int_al_super_paquete(un_paquete, pid);
-	cargar_string_al_super_paquete(un_paquete, nombre_archivo);
+	t_paquete* un_paquete = crear_paquete(PCB_FS_DELETE);
+	cargar_int_al_paquete(un_paquete, pid);
+	cargar_string_al_paquete(un_paquete, nombre_archivo);
 
 	enviar_paquete(un_paquete, fd_instancia_entradasalida);
 	eliminar_paquete(un_paquete);
 }
 
 void enviar_pcb_entradasalida_io_fs_truncate(int pid, char* nombre_archivo, size_t tamanio, int fd_instancia_entradasalida){
-	t_paquete* un_paquete = crear_super_paquete(PCB_FS_TRUNCATE);
-	cargar_int_al_super_paquete(un_paquete, pid);
-	cargar_string_al_super_paquete(un_paquete, nombre_archivo);
-	cargar_int_al_super_paquete(un_paquete, tamanio);
+	t_paquete* un_paquete = crear_paquete(PCB_FS_TRUNCATE);
+	cargar_int_al_paquete(un_paquete, pid);
+	cargar_string_al_paquete(un_paquete, nombre_archivo);
+	cargar_int_al_paquete(un_paquete, tamanio);
 
 	enviar_paquete(un_paquete, fd_instancia_entradasalida);
 	eliminar_paquete(un_paquete);
@@ -754,12 +754,12 @@ void enviar_pcb_entradasalida_io_fs_truncate(int pid, char* nombre_archivo, size
 
 void enviar_pcb_entradasalida_io_fs_write(int pid, size_t tamanio, int direccion_fisica, int fd_instancia_entradasalida, char* nombre_archivo, int puntero_archivo){
 	
-	t_paquete* un_paquete = crear_super_paquete(PCB_FS_WRITE);
-	cargar_int_al_super_paquete(un_paquete, pid);
-	cargar_string_al_super_paquete(un_paquete, nombre_archivo);
-	cargar_size_t_al_super_paquete(un_paquete, tamanio);
-	cargar_int_al_super_paquete(un_paquete, puntero_archivo);
-	cargar_int_al_super_paquete(un_paquete, direccion_fisica);
+	t_paquete* un_paquete = crear_paquete(PCB_FS_WRITE);
+	cargar_int_al_paquete(un_paquete, pid);
+	cargar_string_al_paquete(un_paquete, nombre_archivo);
+	cargar_size_t_al_paquete(un_paquete, tamanio);
+	cargar_int_al_paquete(un_paquete, puntero_archivo);
+	cargar_int_al_paquete(un_paquete, direccion_fisica);
 
 	enviar_paquete(un_paquete, fd_instancia_entradasalida);
 	eliminar_paquete(un_paquete);
@@ -767,12 +767,12 @@ void enviar_pcb_entradasalida_io_fs_write(int pid, size_t tamanio, int direccion
 
 void enviar_pcb_entradasalida_io_fs_read(int pid, size_t tamanio, int puntero_archivo, int direccion_fisica, int fd_instancia_entradasalida, char* nombre_archivo){
 	
-	t_paquete* un_paquete = crear_super_paquete(PCB_FS_READ);
-	cargar_int_al_super_paquete(un_paquete, pid);
-	cargar_string_al_super_paquete(un_paquete, nombre_archivo);
-	cargar_size_t_al_super_paquete(un_paquete, tamanio);
-	cargar_int_al_super_paquete(un_paquete, puntero_archivo);
-	cargar_int_al_super_paquete(un_paquete, direccion_fisica);
+	t_paquete* un_paquete = crear_paquete(PCB_FS_READ);
+	cargar_int_al_paquete(un_paquete, pid);
+	cargar_string_al_paquete(un_paquete, nombre_archivo);
+	cargar_size_t_al_paquete(un_paquete, tamanio);
+	cargar_int_al_paquete(un_paquete, puntero_archivo);
+	cargar_int_al_paquete(un_paquete, direccion_fisica);
 
 	enviar_paquete(un_paquete, fd_instancia_entradasalida);
 	eliminar_paquete(un_paquete);
@@ -813,7 +813,7 @@ void atender_kernel_cpu_dispatch(){
 
             if(pcb==NULL){
                 t_paquete* un_paquete = crear_paquete(ATENDER_RTA_KERNEL);
-                agregar_a_paquete(un_paquete,"-1",sizeof(char*));
+				cargar_string_al_paquete(un_paquete, "-1");
                 enviar_paquete(un_paquete, fd_cpu_dispatch);
                 eliminar_paquete(un_paquete);
                 if(mochila != NULL){

@@ -27,7 +27,6 @@
 #include <semaphore.h>
 #include <readline/history.h>
 
-
 typedef enum
 {
    MENSAJE,
@@ -41,7 +40,6 @@ typedef enum
    RTA_HANDSHAKE,
    CREAR_PROCESO_KM, // KERNEL A MEMORIA
    RPTA_CREAR_PROCESO_MK,
-
 
    	// KERNEL - CPU DISPATCH
 	EJECUTAR_PROCESO_KC,
@@ -60,8 +58,6 @@ typedef enum
 
 	// KERNEL - CPU INTERRUPT
 	FORZAR_DESALOJO_CPU_KERNEL,
-
-
 
    // CPU - MEMORIA
 	PETICION_INFO_CPU_MEMORIA,
@@ -93,8 +89,19 @@ typedef enum
    ESCRITURA_BLOQUE_ENTRADASALIDA_MEMORIA,
    PETICION_INFO_ENTRADASALIDA_MEMORIA
 
-
 }op_code;
+
+typedef struct
+{
+	int size;
+	void* stream;
+} t_buffer;
+
+typedef struct
+{
+	op_code codigo_operacion;
+	t_buffer* buffer;
+} t_paquete;
 
 typedef enum {
 
@@ -183,41 +190,29 @@ typedef struct{
    bool flag_finalizar_proceso;
    bool flag_cancelar_quantum;
 }t_pcb;
-typedef struct
-{
-	int size;
-	void* stream;
-} t_buffer;
-
-typedef struct
-{
-	op_code codigo_operacion;
-	t_buffer* buffer;
-} t_paquete;
 
 // SOCKETS 
 int crear_conexion(char *ip, char* puerto);
 int iniciar_servidor(char * puerto, t_log* un_log, char * msj_server);
 int esperar_cliente(int socket_servidor, t_log* un_log, char* msj);
-int recibir_operacion(int socket_cliente);
 void liberar_conexion(int socket_cliente);
+int recibir_operacion(int socket_cliente);
 
-
-// SERIALIZACION
-t_paquete* crear_super_paquete(op_code code_op);
-void enviar_paquete(t_paquete*, int);
-void eliminar_paquete(t_paquete* un_paquete);
+// PROTOCOLO
+t_paquete* crear_paquete(op_code code_op);
 void crear_buffer(t_paquete* paquete);
 void* serializar_paquete(t_paquete* paquete, int bytes);
+void enviar_paquete(t_paquete*, int);
+void eliminar_paquete(t_paquete* un_paquete);
 
 // CARGAS
-void cargar_int_al_super_paquete(t_paquete* paquete, int numero);
-void cargar_string_al_super_paquete(t_paquete* paquete, char* string);
-void cargar_choclo_al_super_paquete(t_paquete* paquete, void* choclo, int size);
-void cargar_uint8_al_super_paquete(t_paquete* un_paquete, uint8_t uint8_value);
-void cargar_uint32_al_super_paquete(t_paquete* un_paquete, uint32_t uint32_value);
-void cargar_size_t_al_super_paquete(t_paquete* un_paquete, size_t size_t_value);
-void cargar_char_al_super_paquete(t_paquete* paquete, char caracter);
+void cargar_generico_al_paquete(t_paquete* paquete, void* choclo, int size);
+void cargar_int_al_paquete(t_paquete* paquete, int numero);
+void cargar_string_al_paquete(t_paquete* paquete, char* string);
+void cargar_uint8_al_paquete(t_paquete* un_paquete, uint8_t uint8_value);
+void cargar_uint32_al_paquete(t_paquete* un_paquete, uint32_t uint32_value);
+void cargar_size_t_al_paquete(t_paquete* un_paquete, size_t size_t_value);
+void cargar_char_al_paquete(t_paquete* paquete, char caracter);
 
 void agregar_registros_a_paquete(t_paquete * un_paquete, t_registrosCPU* registroRecibido);
 
@@ -226,7 +221,7 @@ t_buffer* recibir_paquete(int conexion);
 void* recibir_buffer(int* size, int socket_cliente);
 int recibir_int_del_buffer(t_buffer* coso);
 char* recibir_string_del_buffer(t_buffer* coso);
-void* recibir_choclo_del_buffer(t_buffer* coso);
+void* recibir_generico_del_buffer(t_buffer* coso);
 void* recibir_generico_del_buffer(t_buffer* un_buffer);
 uint8_t recibir_uint8_del_buffer(t_buffer* un_buffer);
 uint32_t recibir_uint32_del_buffer(t_buffer* un_buffer);

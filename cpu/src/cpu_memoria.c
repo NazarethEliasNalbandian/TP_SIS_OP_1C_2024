@@ -66,7 +66,7 @@ void atender_cpu_memoria(){
 			{
 				valor_leido_uint8 = recibir_uint8_del_buffer(unBuffer);
 			} else if(tipo_dato == T_STRING){
-				valor_leido_string = (char*) recibir_choclo_del_buffer(unBuffer);
+				valor_leido_string = (char*) recibir_generico_del_buffer(unBuffer);
 			}
 			destruir_buffer(unBuffer);
 			sem_post(&sem_val_leido);

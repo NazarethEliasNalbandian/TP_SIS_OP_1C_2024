@@ -81,16 +81,16 @@ void eliminar_proceso_y_liberar_estructuras(t_buffer* unBuffer){
 
 void responder_a_kernel_confirmacion_del_proceso_creado(){
 	retardo_respuesta();
-	t_paquete* un_paquete = crear_super_paquete(ESTRUCTURA_INICIADA_KERNEL_MEMORIA);
-	cargar_string_al_super_paquete(un_paquete, "Proceso creado");
+	t_paquete* un_paquete = crear_paquete(ESTRUCTURA_INICIADA_KERNEL_MEMORIA);
+	cargar_string_al_paquete(un_paquete, "Proceso creado");
 	enviar_paquete(un_paquete, fd_kernel);
 	eliminar_paquete(un_paquete);
 }
 
 void enviar_a_kernel_rpta_de_eliminacion_de_proceso(){
 	retardo_respuesta();
-	t_paquete* un_paquete = crear_super_paquete(ESTRUCTURA_LIBERADA_KERNEL_MEMORIA);
-	cargar_string_al_super_paquete(un_paquete, "Estructura liberada");
+	t_paquete* un_paquete = crear_paquete(ESTRUCTURA_LIBERADA_KERNEL_MEMORIA);
+	cargar_string_al_paquete(un_paquete, "Estructura liberada");
 	enviar_paquete(un_paquete, fd_kernel);
 	eliminar_paquete(un_paquete);
 }

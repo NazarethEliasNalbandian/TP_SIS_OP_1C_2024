@@ -162,16 +162,16 @@ void atender_proceso_kernel(t_buffer* unBuffer){
     pthread_mutex_lock(&mutex_interruptFlag);
     if(!flag_exit && interrupt_flag){
         log_info(cpu_log_debug, "ENTRE A INTERRUPT_FLAG");
-		un_paquete = crear_super_paquete(ATENDER_DESALOJO_PROCESO_CPU);
+		un_paquete = crear_paquete(ATENDER_DESALOJO_PROCESO_CPU);
         agregar_contexto_a_paquete(un_paquete);
-        cargar_string_al_super_paquete(un_paquete, interrupt_motivo);
+        cargar_string_al_paquete(un_paquete, interrupt_motivo);
         enviar_paquete(un_paquete, fd_kernel_dispatch);
         eliminar_paquete(un_paquete);
 	}
     if(desalojar){
         // ENTRA ACA EN CASO DE ERRORES O EXIT
         log_info(cpu_log_debug, "ENTRE A DESALOJAR_FLAG");
-        un_paquete = crear_super_paquete(tipo_desalojo);
+        un_paquete = crear_paquete(tipo_desalojo);
         agregar_contexto_a_paquete(un_paquete);
         enviar_paquete(un_paquete, fd_kernel_dispatch);
         eliminar_paquete(un_paquete);

@@ -7,9 +7,9 @@ void fetch()
 {
     // pedido de instrucciones a memoria
     log_info(cpu_log_obligatorio, "PID: <%d> - FETCH - Program Counter: <%d>", un_contexto->pID, un_contexto->r_cpu->PC);
-    t_paquete *paquete = crear_super_paquete(PETICION_DE_INSTRUCCIONES_CPU_MEMORIA);
-    cargar_int_al_super_paquete(paquete, un_contexto->pID);
-    cargar_uint32_al_super_paquete(paquete, un_contexto->r_cpu->PC);
+    t_paquete *paquete = crear_paquete(PETICION_DE_INSTRUCCIONES_CPU_MEMORIA);
+    cargar_int_al_paquete(paquete, un_contexto->pID);
+    cargar_uint32_al_paquete(paquete, un_contexto->r_cpu->PC);
     enviar_paquete(paquete, fd_memoria);
     eliminar_paquete(paquete);
 }
@@ -41,11 +41,11 @@ uint32_t solicitar_uint32_memoria(int dir_logica)
     }
     else
     {
-        t_paquete *paqueteLecturaMemoria = crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
-        cargar_int_al_super_paquete(paqueteLecturaMemoria, un_contexto->pID);
-        cargar_int_al_super_paquete(paqueteLecturaMemoria, dir_fisica);
-        cargar_size_t_al_super_paquete(paqueteLecturaMemoria, tam);
-        cargar_int_al_super_paquete(paqueteLecturaMemoria, T_UINT32);
+        t_paquete *paqueteLecturaMemoria = crear_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
+        cargar_int_al_paquete(paqueteLecturaMemoria, un_contexto->pID);
+        cargar_int_al_paquete(paqueteLecturaMemoria, dir_fisica);
+        cargar_size_t_al_paquete(paqueteLecturaMemoria, tam);
+        cargar_int_al_paquete(paqueteLecturaMemoria, T_UINT32);
 
         enviar_paquete(paqueteLecturaMemoria, fd_memoria);
         eliminar_paquete(paqueteLecturaMemoria);
@@ -69,11 +69,11 @@ uint8_t solicitar_uint8_memoria(int dir_logica)
     }
     else
     {
-        t_paquete *paqueteLecturaMemoria = crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
-        cargar_int_al_super_paquete(paqueteLecturaMemoria, un_contexto->pID);
-        cargar_int_al_super_paquete(paqueteLecturaMemoria, dir_fisica);
-        cargar_size_t_al_super_paquete(paqueteLecturaMemoria, tam);
-        cargar_int_al_super_paquete(paqueteLecturaMemoria, T_UINT8);
+        t_paquete *paqueteLecturaMemoria = crear_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
+        cargar_int_al_paquete(paqueteLecturaMemoria, un_contexto->pID);
+        cargar_int_al_paquete(paqueteLecturaMemoria, dir_fisica);
+        cargar_size_t_al_paquete(paqueteLecturaMemoria, tam);
+        cargar_int_al_paquete(paqueteLecturaMemoria, T_UINT8);
 
         enviar_paquete(paqueteLecturaMemoria, fd_memoria);
         eliminar_paquete(paqueteLecturaMemoria);
@@ -100,11 +100,11 @@ char* solicitar_string_memoria(uint32_t dir_logica, int tamanio)
         else
         {
             // Le pido a memoria el contenido del marco
-            t_paquete *paqueteLecturaMemoria = crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
-            cargar_int_al_super_paquete(paqueteLecturaMemoria, un_contexto->pID);
-            cargar_int_al_super_paquete(paqueteLecturaMemoria, dir_fisica);
-            cargar_size_t_al_super_paquete(paqueteLecturaMemoria, tam);
-            cargar_int_al_super_paquete(paqueteLecturaMemoria, T_STRING);
+            t_paquete *paqueteLecturaMemoria = crear_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
+            cargar_int_al_paquete(paqueteLecturaMemoria, un_contexto->pID);
+            cargar_int_al_paquete(paqueteLecturaMemoria, dir_fisica);
+            cargar_size_t_al_paquete(paqueteLecturaMemoria, tam);
+            cargar_int_al_paquete(paqueteLecturaMemoria, T_STRING);
 
             enviar_paquete(paqueteLecturaMemoria, fd_memoria);
             eliminar_paquete(paqueteLecturaMemoria);
@@ -127,13 +127,13 @@ int escribir_valor_memoria_uint8(uint32_t dir_logica, uint8_t valorAEscribir)
     if (dir_fisica != -1)
     {
 
-        t_paquete *paqueteEscrituraMemoria = crear_super_paquete(ESCRITURA_BLOQUE_CPU_MEMORIA);
+        t_paquete *paqueteEscrituraMemoria = crear_paquete(ESCRITURA_BLOQUE_CPU_MEMORIA);
 
-        cargar_int_al_super_paquete(paqueteEscrituraMemoria, un_contexto->pID);
-        cargar_int_al_super_paquete(paqueteEscrituraMemoria, dir_fisica);
-        cargar_size_t_al_super_paquete(paqueteEscrituraMemoria, tam);
-        cargar_int_al_super_paquete(paqueteEscrituraMemoria, T_UINT8);
-        cargar_choclo_al_super_paquete(paqueteEscrituraMemoria, &valorAEscribir, tam);
+        cargar_int_al_paquete(paqueteEscrituraMemoria, un_contexto->pID);
+        cargar_int_al_paquete(paqueteEscrituraMemoria, dir_fisica);
+        cargar_size_t_al_paquete(paqueteEscrituraMemoria, tam);
+        cargar_int_al_paquete(paqueteEscrituraMemoria, T_UINT8);
+        cargar_generico_al_paquete(paqueteEscrituraMemoria, &valorAEscribir, tam);
 
         enviar_paquete(paqueteEscrituraMemoria, fd_memoria);
         eliminar_paquete(paqueteEscrituraMemoria);
@@ -156,13 +156,13 @@ int escribir_valor_memoria_uint32(uint32_t dir_logica, uint32_t valorAEscribir)
     if (dir_fisica != -1)
     {
 
-        t_paquete *paqueteEscrituraMemoria = crear_super_paquete(ESCRITURA_BLOQUE_CPU_MEMORIA);
+        t_paquete *paqueteEscrituraMemoria = crear_paquete(ESCRITURA_BLOQUE_CPU_MEMORIA);
 
-        cargar_int_al_super_paquete(paqueteEscrituraMemoria, un_contexto->pID);
-        cargar_int_al_super_paquete(paqueteEscrituraMemoria, dir_fisica);
-        cargar_size_t_al_super_paquete(paqueteEscrituraMemoria, tam);
-        cargar_int_al_super_paquete(paqueteEscrituraMemoria, T_UINT32);
-        cargar_choclo_al_super_paquete(paqueteEscrituraMemoria,  &valorAEscribir, tam);
+        cargar_int_al_paquete(paqueteEscrituraMemoria, un_contexto->pID);
+        cargar_int_al_paquete(paqueteEscrituraMemoria, dir_fisica);
+        cargar_size_t_al_paquete(paqueteEscrituraMemoria, tam);
+        cargar_int_al_paquete(paqueteEscrituraMemoria, T_UINT32);
+        cargar_generico_al_paquete(paqueteEscrituraMemoria,  &valorAEscribir, tam);
 
         enviar_paquete(paqueteEscrituraMemoria, fd_memoria);
         eliminar_paquete(paqueteEscrituraMemoria);
@@ -191,13 +191,13 @@ int escribir_valor_memoria_string(uint32_t dir_logica, char* valorAEscribir)
     if (dir_fisica != -1)
     {
 
-        t_paquete *paqueteEscrituraMemoria = crear_super_paquete(ESCRITURA_BLOQUE_CPU_MEMORIA);
+        t_paquete *paqueteEscrituraMemoria = crear_paquete(ESCRITURA_BLOQUE_CPU_MEMORIA);
 
-        cargar_int_al_super_paquete(paqueteEscrituraMemoria, un_contexto->pID);
-        cargar_int_al_super_paquete(paqueteEscrituraMemoria, dir_fisica);
-        cargar_size_t_al_super_paquete(paqueteEscrituraMemoria, tam);
-        cargar_int_al_super_paquete(paqueteEscrituraMemoria, T_STRING);
-        cargar_choclo_al_super_paquete(paqueteEscrituraMemoria, (void*) valorAEscribir, tam);
+        cargar_int_al_paquete(paqueteEscrituraMemoria, un_contexto->pID);
+        cargar_int_al_paquete(paqueteEscrituraMemoria, dir_fisica);
+        cargar_size_t_al_paquete(paqueteEscrituraMemoria, tam);
+        cargar_int_al_paquete(paqueteEscrituraMemoria, T_STRING);
+        cargar_generico_al_paquete(paqueteEscrituraMemoria, (void*) valorAEscribir, tam);
 
         enviar_paquete(paqueteEscrituraMemoria, fd_memoria);
         eliminar_paquete(paqueteEscrituraMemoria);
@@ -318,20 +318,20 @@ void execute()
             un_contexto->r_cpu->PC+= 1;
             log_info(cpu_log_obligatorio, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>", un_contexto->pID, instruccion_split[0], instruccion_split[1], instruccion_split[2]);
 
-            paquete = crear_super_paquete(ATENDER_INSTRUCCION_CPU);
+            paquete = crear_paquete(ATENDER_INSTRUCCION_CPU);
 
             agregar_contexto_a_paquete(paquete);
 
-            cargar_string_al_super_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
-            cargar_int_al_super_paquete(paquete, 2); 
+            cargar_string_al_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
+            cargar_int_al_paquete(paquete, 2); 
 
             // PARAMETROS
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
 
-            cargar_int_al_super_paquete(paquete, T_INT);
-            cargar_int_al_super_paquete(paquete, atoi(instruccion_split[2])); 
+            cargar_int_al_paquete(paquete, T_INT);
+            cargar_int_al_paquete(paquete, atoi(instruccion_split[2])); 
 
             enviar_paquete(paquete, fd_kernel_dispatch);
 
@@ -346,10 +346,10 @@ void execute()
             log_info(cpu_log_obligatorio, "PID: <%d> - Ejecutando: <%s> - <%s>", un_contexto->pID, instruccion_split[0], instruccion_split[1]);
             int t = atoi(instruccion_split[1]);
 
-            paquete = crear_super_paquete(RESIZE_CPU_MEMORIA);
+            paquete = crear_paquete(RESIZE_CPU_MEMORIA);
 
-            cargar_int_al_super_paquete(paquete, un_contexto->pID); 
-            cargar_int_al_super_paquete(paquete, t); 
+            cargar_int_al_paquete(paquete, un_contexto->pID); 
+            cargar_int_al_paquete(paquete, t); 
 
             enviar_paquete(paquete, fd_memoria);
             sem_wait(&sem_resize);
@@ -370,16 +370,16 @@ void execute()
             log_info(cpu_log_obligatorio, "PID: <%d> - Ejecutando: <%s> - <%s>", un_contexto->pID, instruccion_split[0], instruccion_split[1]);
 
 
-            paquete = crear_super_paquete(ATENDER_INSTRUCCION_CPU);
+            paquete = crear_paquete(ATENDER_INSTRUCCION_CPU);
 
             agregar_contexto_a_paquete(paquete);
 
-            cargar_string_al_super_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
+            cargar_string_al_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
             cantidadParametros = 1;
-            cargar_int_al_super_paquete(paquete, cantidadParametros); 
+            cargar_int_al_paquete(paquete, cantidadParametros); 
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[1]); // NOMBRE RECURSO
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[1]); // NOMBRE RECURSO
 
             enviar_paquete(paquete, fd_kernel_dispatch);
 
@@ -392,16 +392,16 @@ void execute()
             un_contexto->r_cpu->PC += 1;
             log_info(cpu_log_obligatorio, "PID: <%d> - Ejecutando: <%s> - <%s>", un_contexto->pID, instruccion_split[0], instruccion_split[1]);
 
-            paquete = crear_super_paquete(ATENDER_INSTRUCCION_CPU);
+            paquete = crear_paquete(ATENDER_INSTRUCCION_CPU);
 
             agregar_contexto_a_paquete(paquete);
 
-            cargar_string_al_super_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
+            cargar_string_al_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
             cantidadParametros = 1;
-            cargar_int_al_super_paquete(paquete, cantidadParametros); 
+            cargar_int_al_paquete(paquete, cantidadParametros); 
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[1]); // NOMBRE RECURSO
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[1]); // NOMBRE RECURSO
 
             enviar_paquete(paquete, fd_kernel_dispatch);
 
@@ -497,19 +497,19 @@ void execute()
             log_trace(cpu_log_debug,"tamanio: %ld", tamanio);
             dir_logica = obtenerIntDeRegistro(instruccion_split[2], &er, &r);
 
-            paquete = crear_super_paquete(ATENDER_INSTRUCCION_CPU);
+            paquete = crear_paquete(ATENDER_INSTRUCCION_CPU);
 
             agregar_contexto_a_paquete(paquete);
 
-            cargar_string_al_super_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
+            cargar_string_al_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
             cantidadParametros = 3;
-            cargar_int_al_super_paquete(paquete, cantidadParametros);
+            cargar_int_al_paquete(paquete, cantidadParametros);
             
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
 
-            cargar_int_al_super_paquete(paquete, T_SIZE_T);
-            cargar_size_t_al_super_paquete(paquete, tamanio);
+            cargar_int_al_paquete(paquete, T_SIZE_T);
+            cargar_size_t_al_paquete(paquete, tamanio);
 
             dir_fisica = MMU(dir_logica);
             if(dir_fisica == -1){
@@ -517,8 +517,8 @@ void execute()
                  tipo_desalojo = ATENDER_EXIT;
                 flag_exit = true;
             }
-            cargar_int_al_super_paquete(paquete, T_INT);
-            cargar_int_al_super_paquete(paquete, dir_fisica);
+            cargar_int_al_paquete(paquete, T_INT);
+            cargar_int_al_paquete(paquete, dir_fisica);
 
             if(desalojar){
                 eliminar_paquete(paquete);
@@ -537,22 +537,22 @@ void execute()
             un_contexto->r_cpu->PC += 1;
             log_info(cpu_log_obligatorio, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s> - <%s>", un_contexto->pID, instruccion_split[0], instruccion_split[1], instruccion_split[2], instruccion_split[3]);
             
-            paquete = crear_super_paquete(ATENDER_INSTRUCCION_CPU);
+            paquete = crear_paquete(ATENDER_INSTRUCCION_CPU);
 
             agregar_contexto_a_paquete(paquete);
 
             tamanio = obtenerSizeTDeRegistro(instruccion_split[3], &er, &r);
             dir_logica = obtenerIntDeRegistro(instruccion_split[2], &er, &r);
 
-            cargar_string_al_super_paquete(paquete, instruccion_split[0]);
+            cargar_string_al_paquete(paquete, instruccion_split[0]);
             cantidadParametros = 3;
-            cargar_int_al_super_paquete(paquete, cantidadParametros);
+            cargar_int_al_paquete(paquete, cantidadParametros);
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
 
-            cargar_int_al_super_paquete(paquete, T_SIZE_T);
-            cargar_size_t_al_super_paquete(paquete, tamanio);
+            cargar_int_al_paquete(paquete, T_SIZE_T);
+            cargar_size_t_al_paquete(paquete, tamanio);
             
             dir_fisica = MMU(dir_logica);
             if(dir_fisica == -1){
@@ -560,8 +560,8 @@ void execute()
                 tipo_desalojo = ATENDER_EXIT;
                 flag_exit = true;
             }
-            cargar_int_al_super_paquete(paquete, T_INT);
-            cargar_int_al_super_paquete(paquete, dir_fisica);
+            cargar_int_al_paquete(paquete, T_INT);
+            cargar_int_al_paquete(paquete, dir_fisica);
             
             if(desalojar){
                 eliminar_paquete(paquete);
@@ -579,19 +579,19 @@ void execute()
             log_info(cpu_log_obligatorio, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>", un_contexto->pID, instruccion_split[0], instruccion_split[1], instruccion_split[2]);
 
 
-            paquete = crear_super_paquete(ATENDER_INSTRUCCION_CPU);
+            paquete = crear_paquete(ATENDER_INSTRUCCION_CPU);
 
             agregar_contexto_a_paquete(paquete);
 
-            cargar_string_al_super_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
+            cargar_string_al_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
             cantidadParametros = 2;
-            cargar_int_al_super_paquete(paquete, cantidadParametros);
+            cargar_int_al_paquete(paquete, cantidadParametros);
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[2]); // NOMBRE ARCHIVO
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[2]); // NOMBRE ARCHIVO
 
             enviar_paquete(paquete, fd_kernel_dispatch);
 
@@ -602,19 +602,19 @@ void execute()
             un_contexto->r_cpu->PC += 1;
             log_info(cpu_log_obligatorio, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>", un_contexto->pID, instruccion_split[0], instruccion_split[1], instruccion_split[2]);
 
-            paquete = crear_super_paquete(ATENDER_INSTRUCCION_CPU);
+            paquete = crear_paquete(ATENDER_INSTRUCCION_CPU);
 
             agregar_contexto_a_paquete(paquete);
 
-            cargar_string_al_super_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
+            cargar_string_al_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
             cantidadParametros = 2;
-            cargar_int_al_super_paquete(paquete, cantidadParametros);
+            cargar_int_al_paquete(paquete, cantidadParametros);
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[2]); // NOMBRE ARCHIVO
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[2]); // NOMBRE ARCHIVO
 
             enviar_paquete(paquete, fd_kernel_dispatch);
 
@@ -627,22 +627,22 @@ void execute()
 
             tamanio = obtenerSizeTDeRegistro(instruccion_split[3], &er, &r);
 
-            paquete = crear_super_paquete(ATENDER_INSTRUCCION_CPU);
+            paquete = crear_paquete(ATENDER_INSTRUCCION_CPU);
 
             agregar_contexto_a_paquete(paquete);
 
-            cargar_string_al_super_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
+            cargar_string_al_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
             cantidadParametros = 3;
-            cargar_int_al_super_paquete(paquete, cantidadParametros);
+            cargar_int_al_paquete(paquete, cantidadParametros);
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[2]); // NOMBRE ARCHIVO
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[2]); // NOMBRE ARCHIVO
 
-            cargar_int_al_super_paquete(paquete, T_SIZE_T);
-            cargar_size_t_al_super_paquete(paquete, tamanio); // TAMAÑO
+            cargar_int_al_paquete(paquete, T_SIZE_T);
+            cargar_size_t_al_paquete(paquete, tamanio); // TAMAÑO
 
             enviar_paquete(paquete, fd_kernel_dispatch);
 
@@ -656,27 +656,27 @@ void execute()
             
             tamanio = obtenerSizeTDeRegistro(instruccion_split[4], &er, &r);   
 
-            paquete = crear_super_paquete(ATENDER_INSTRUCCION_CPU);
+            paquete = crear_paquete(ATENDER_INSTRUCCION_CPU);
 
             agregar_contexto_a_paquete(paquete);
 
-            cargar_string_al_super_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
+            cargar_string_al_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
             cantidadParametros = 5;
-            cargar_int_al_super_paquete(paquete, cantidadParametros);
+            cargar_int_al_paquete(paquete, cantidadParametros);
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[2]); // NOMBRE ARCHIVO
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[2]); // NOMBRE ARCHIVO
             
             puntero = obtenerIntDeRegistro(instruccion_split[5], &er, &r);
 
-            cargar_int_al_super_paquete(paquete, T_INT);
-            cargar_int_al_super_paquete(paquete, puntero); //PUNTERO
+            cargar_int_al_paquete(paquete, T_INT);
+            cargar_int_al_paquete(paquete, puntero); //PUNTERO
 
-            cargar_int_al_super_paquete(paquete, T_SIZE_T);
-            cargar_size_t_al_super_paquete(paquete, tamanio);
+            cargar_int_al_paquete(paquete, T_SIZE_T);
+            cargar_size_t_al_paquete(paquete, tamanio);
 
             dir_logica = obtenerIntDeRegistro(instruccion_split[3], &er, &r);
 
@@ -686,8 +686,8 @@ void execute()
                 tipo_desalojo = ATENDER_EXIT;
                 flag_exit = true;
             }
-            cargar_int_al_super_paquete(paquete, T_INT);
-            cargar_int_al_super_paquete(paquete, dir_fisica);
+            cargar_int_al_paquete(paquete, T_INT);
+            cargar_int_al_paquete(paquete, dir_fisica);
             if(desalojar){
                 eliminar_paquete(paquete);
                 break;
@@ -706,27 +706,27 @@ void execute()
             
             tamanio = obtenerSizeTDeRegistro(instruccion_split[4], &er, &r);  
 
-            paquete = crear_super_paquete(ATENDER_INSTRUCCION_CPU);
+            paquete = crear_paquete(ATENDER_INSTRUCCION_CPU);
 
             agregar_contexto_a_paquete(paquete);
 
-            cargar_string_al_super_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
+            cargar_string_al_paquete(paquete, instruccion_split[0]); // NOMBRE INSTRUCCION
             cantidadParametros = 5;
-            cargar_int_al_super_paquete(paquete, cantidadParametros);
+            cargar_int_al_paquete(paquete, cantidadParametros);
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[1]); // NOMBRE INTERFAZ
 
-            cargar_int_al_super_paquete(paquete, T_STRING);
-            cargar_string_al_super_paquete(paquete, instruccion_split[2]); // NOMBRE ARCHIVO
+            cargar_int_al_paquete(paquete, T_STRING);
+            cargar_string_al_paquete(paquete, instruccion_split[2]); // NOMBRE ARCHIVO
 
             puntero = obtenerIntDeRegistro(instruccion_split[5], &er, &r);
 
-            cargar_int_al_super_paquete(paquete, T_INT);
-            cargar_int_al_super_paquete(paquete, puntero);     // PUNTERO
+            cargar_int_al_paquete(paquete, T_INT);
+            cargar_int_al_paquete(paquete, puntero);     // PUNTERO
 
-            cargar_int_al_super_paquete(paquete, T_SIZE_T);
-            cargar_size_t_al_super_paquete(paquete, tamanio);  // TAMAÑO
+            cargar_int_al_paquete(paquete, T_SIZE_T);
+            cargar_size_t_al_paquete(paquete, tamanio);  // TAMAÑO
        
             dir_logica = obtenerIntDeRegistro(instruccion_split[3], &er, &r);
 
@@ -736,8 +736,8 @@ void execute()
                 tipo_desalojo = ATENDER_EXIT;
                 flag_exit = true;
             }
-            cargar_int_al_super_paquete(paquete, T_INT);
-            cargar_int_al_super_paquete(paquete, dir_fisica);
+            cargar_int_al_paquete(paquete, T_INT);
+            cargar_int_al_paquete(paquete, dir_fisica);
 
             if(desalojar){
                 eliminar_paquete(paquete);

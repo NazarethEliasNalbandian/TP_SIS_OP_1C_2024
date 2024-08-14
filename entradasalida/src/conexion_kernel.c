@@ -460,11 +460,11 @@ void enviar_nombre_a_kernel(t_buffer* unBuffer) {
     char* mensaje = recibir_string_del_buffer(unBuffer);
     destruir_buffer(unBuffer);
 
-    t_paquete* un_paquete = crear_super_paquete(NOMBRE_ENTRADA_SALIDA);
+    t_paquete* un_paquete = crear_paquete(NOMBRE_ENTRADA_SALIDA);
     if(strcmp(mensaje, "PETICION NOMBRE Y TIPO") == 0)
      {
-        cargar_string_al_super_paquete(un_paquete, NOMBRE_INTERFAZ);
-        cargar_int_al_super_paquete(un_paquete, TIPO_INTERFAZ_ENUM);
+        cargar_string_al_paquete(un_paquete, NOMBRE_INTERFAZ);
+        cargar_int_al_paquete(un_paquete, TIPO_INTERFAZ_ENUM);
      }
 
     enviar_paquete(un_paquete, fd_kernel);
@@ -479,9 +479,9 @@ void enviar_nombre_a_kernel(t_buffer* unBuffer) {
 
 void enviar_fin_entradasalida_a_kernel(int pid) {
 
-    t_paquete* un_paquete = crear_super_paquete(FIN_ENTRADASALIDA);
-    cargar_int_al_super_paquete(un_paquete, pid);
-    cargar_string_al_super_paquete(un_paquete, "OK");
+    t_paquete* un_paquete = crear_paquete(FIN_ENTRADASALIDA);
+    cargar_int_al_paquete(un_paquete, pid);
+    cargar_string_al_paquete(un_paquete, "OK");
 
     enviar_paquete(un_paquete, fd_kernel);
     eliminar_paquete(un_paquete);
@@ -491,9 +491,9 @@ void enviar_fin_entradasalida_a_kernel(int pid) {
 
 void enviar_contexto_a_kernel_con_desalojo(int pid) {
 
-    t_paquete* un_paquete = crear_super_paquete(FIN_ENTRADASALIDA);
-    cargar_int_al_super_paquete(un_paquete, pid);
-    cargar_string_al_super_paquete(un_paquete, "ERROR");
+    t_paquete* un_paquete = crear_paquete(FIN_ENTRADASALIDA);
+    cargar_int_al_paquete(un_paquete, pid);
+    cargar_string_al_paquete(un_paquete, "ERROR");
 
     enviar_paquete(un_paquete, fd_kernel);
     eliminar_paquete(un_paquete);

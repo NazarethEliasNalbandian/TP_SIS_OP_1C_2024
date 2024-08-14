@@ -60,7 +60,7 @@ bool validador_de_header(char* header_string){
 
 void enviar_contexto_a_kernel_con_desalojo_cpu(){
     desalojar=true;
-    t_paquete* un_paquete = crear_super_paquete(tipo_desalojo);
+    t_paquete* un_paquete = crear_paquete(tipo_desalojo);
     agregar_contexto_a_paquete(un_paquete);
     enviar_paquete(un_paquete, fd_kernel_dispatch);
     eliminar_paquete(un_paquete);
@@ -74,8 +74,8 @@ void enviar_contexto_a_kernel_con_desalojo_cpu(){
 
 void agregar_contexto_a_paquete(t_paquete * un_paquete){
 
-	cargar_int_al_super_paquete(un_paquete, un_contexto->pID);
-	cargar_int_al_super_paquete(un_paquete, un_contexto->verificador);
+	cargar_int_al_paquete(un_paquete, un_contexto->pID);
+	cargar_int_al_paquete(un_paquete, un_contexto->verificador);
 	agregar_registros_a_paquete(un_paquete, un_contexto->r_cpu);
 }
 

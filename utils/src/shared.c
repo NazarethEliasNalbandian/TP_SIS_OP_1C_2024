@@ -1,49 +1,32 @@
 #include "../include/shared.h"
 
-void enviar_paquete(t_paquete* paquete, int socket_cliente)
+
+// SOCKET
+
+int crear_conexion(char *ip, char* puerto)
 {
-	int bytes = paquete->buffer->size + 2*sizeof(int);
-	void* a_enviar = serializar_paquete(paquete, bytes);
+	struct addrinfo hints;
+	struct addrinfo *server_info;
 
-	send(socket_cliente, a_enviar, bytes, 0);
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
 
-	free(a_enviar);
+	getaddrinfo(ip, puerto, &hints, &server_info);
+
+	int socket_cliente = 0;
+
+	socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
+
+	if(connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1)
+		printf("Error al conectar el socket ");
+
+	freeaddrinfo(server_info);
+
+	return socket_cliente;
 }
 
-void eliminar_paquete(t_paquete* paquete)
-{
-	free(paquete->buffer->stream);
-	free(paquete->buffer);
-	free(paquete);
-}
-
-void liberar_conexion(int socket_cliente)
-{
-	close(socket_cliente);
-}
-
-/*
- * ------- SERVIDOR -------
- */
-
-void recibir_mensaje(int socket_cliente, t_log* logger)
-{
-	int size;
-	char* buffer = recibir_buffer(&size, socket_cliente);
-	log_info(logger, "Me llego el mensaje %s", buffer);
-	free(buffer);
-}
-
-t_buffer* _crear_buffer()
-{
-	t_buffer* un_buffer = malloc(sizeof(t_buffer));
-	un_buffer->size = 0;
-	un_buffer->stream = NULL;
-
-	return un_buffer;
-}
-
-// HAY QUE AGREGARLA A SHARED
 int iniciar_servidor(char* puerto, t_log* un_log, char* msj_server)
 {
 	int socket_servidor;
@@ -72,7 +55,6 @@ int iniciar_servidor(char* puerto, t_log* un_log, char* msj_server)
 	return socket_servidor;
 }
 
-// HAY QUE AGREGARLA A SHARED
 int esperar_cliente(int socket_servidor, t_log* un_log, char* msj)
 {
 	int socket_cliente;
@@ -84,10 +66,229 @@ int esperar_cliente(int socket_servidor, t_log* un_log, char* msj)
 	return socket_cliente;
 }
 
-// HAY QUE AGREGARLA A CARGA_Y_EXTRACCION
+void liberar_conexion(int socket_cliente)
+{
+	close(socket_cliente);
+}
+
+int recibir_operacion(int socket_cliente)
+{
+	int cod_op;
+	if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) > 0)
+	{
+		return cod_op;
+	}
+	else
+	{
+		close(socket_cliente);
+		return -1;
+	}
+}
+
+// PROTOCOLO
+
+t_paquete* crear_paquete(op_code code_op){
+	t_paquete* super_paquete = malloc(sizeof(t_paquete));
+	super_paquete->codigo_operacion = code_op;
+	crear_buffer(super_paquete);
+	return  super_paquete;
+}
+
+void crear_buffer(t_paquete* paquete)
+{
+	paquete->buffer = malloc(sizeof(t_buffer));
+	paquete->buffer->size = 0;
+	paquete->buffer->stream = NULL;
+}
+
+void* serializar_paquete(t_paquete* paquete, int bytes)
+{
+	void * magic = malloc(bytes);
+	int desplazamiento = 0;
+
+	memcpy(magic + desplazamiento, &(paquete->codigo_operacion), sizeof(int));
+	desplazamiento+= sizeof(int);
+	memcpy(magic + desplazamiento, &(paquete->buffer->size), sizeof(int));
+	desplazamiento+= sizeof(int);
+	memcpy(magic + desplazamiento, paquete->buffer->stream, paquete->buffer->size);
+	desplazamiento+= paquete->buffer->size;
+
+	return magic;
+}
+
+void enviar_paquete(t_paquete* paquete, int socket_cliente)
+{
+	int bytes = paquete->buffer->size + 2*sizeof(int);
+	void* a_enviar = serializar_paquete(paquete, bytes);
+
+	send(socket_cliente, a_enviar, bytes, 0);
+
+	free(a_enviar);
+}
+
+void eliminar_paquete(t_paquete* paquete)
+{
+	free(paquete->buffer->stream);
+	free(paquete->buffer);
+	free(paquete);
+}
 
 
-// HAY QUE AGREGARLA A CARGA_Y_EXTRACCION
+// EXTRACCIÓN
+
+
+t_buffer* recibir_paquete(int conexion){
+	t_buffer* unBuffer = malloc(sizeof(t_buffer));
+	int size;
+	unBuffer->stream = recibir_buffer(&size, conexion);
+	unBuffer->size = size;
+	return unBuffer;
+}
+
+void* recibir_buffer(int* size, int socket_cliente)
+{
+	void * buffer;
+
+	recv(socket_cliente, size, sizeof(int), MSG_WAITALL);
+	buffer = malloc(*size);
+	recv(socket_cliente, buffer, *size, MSG_WAITALL);
+
+	return buffer;
+}
+
+void* recibir_generico_del_buffer(t_buffer* un_buffer){
+	if(un_buffer->size == 0){
+		printf("\n[ERROR] Al intentar extraer un contenido de un t_buffer vacio\n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(un_buffer->size < 0){
+		printf("\n[ERROR] Esto es raro. El t_buffer contiene un size NEGATIVO \n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	int size_generico;
+	void* generico;
+	memcpy(&size_generico, un_buffer->stream, sizeof(int));
+	generico = malloc(size_generico);
+	memcpy(generico, un_buffer->stream + sizeof(int), size_generico);
+
+	int nuevo_size = un_buffer->size - sizeof(int) - size_generico;
+	if(nuevo_size == 0){
+		un_buffer->size = 0;
+		free(un_buffer->stream);
+		un_buffer->stream = NULL;
+		return generico;
+	}
+	if(nuevo_size < 0){
+		printf("\n[ERROR_CHICLO]: BUFFER CON TAMAÑO NEGATIVO\n\n");
+		exit(EXIT_FAILURE);
+	}
+	void* nuevo_generico = malloc(nuevo_size);
+	memcpy(nuevo_generico, un_buffer->stream + sizeof(int) + size_generico, nuevo_size);
+	free(un_buffer->stream);
+	un_buffer->stream = nuevo_generico;
+	un_buffer->size = nuevo_size;
+	// free(nuevo_generico);
+
+	return generico;
+}
+
+int recibir_int_del_buffer(t_buffer* coso){
+	if(coso->size == 0){
+		printf("\n[ERROR] Al intentar extraer un INT de un t_buffer vacio\n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(coso->size < 0){
+		printf("\n[ERROR] Esto es raro. El t_buffer contiene un size NEGATIVO \n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	int valor_a_devolver;
+	memcpy(&valor_a_devolver, coso->stream, sizeof(int));
+
+	int nuevo_size = coso->size - sizeof(int);
+	if(nuevo_size == 0){
+
+		if(coso->stream != NULL){
+			free(coso->stream);
+			coso->stream = NULL;
+		}
+
+		coso->size = 0;
+		return valor_a_devolver;
+	}
+	if(nuevo_size < 0){
+		printf("\n[ERROR_INT]: BUFFER CON TAMAÑO NEGATIVO\n\n");
+		//free(valor_a_devolver);
+		//return 0;
+		exit(EXIT_FAILURE);
+	}
+	void* nuevo_coso = malloc(nuevo_size);
+	memcpy(nuevo_coso, coso->stream + sizeof(int), nuevo_size);
+	if(coso->stream != NULL){
+		free(coso->stream);
+		coso->stream = NULL;
+	}
+	coso->stream = nuevo_coso;
+	coso->size = nuevo_size;
+
+	return valor_a_devolver;
+}
+
+char* recibir_string_del_buffer(t_buffer* coso){
+
+    //----------------- Formato Inicial----------------------------
+	if(coso->size == 0){
+		printf("\n[ERROR] Al intentar extraer un contenido de un t_buffer vacio\n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(coso->size < 0){
+		printf("\n[ERROR] Esto es raro. El t_buffer contiene un size NEGATIVO \n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	int size_string;
+	char* string;
+	memcpy(&size_string, coso->stream, sizeof(int));
+	//string = malloc(sizeof(size_string));
+	string = malloc(size_string);
+	memcpy(string, coso->stream + sizeof(int), size_string);
+
+	int nuevo_size = coso->size - sizeof(int) - size_string;
+	if(nuevo_size == 0){
+		if(coso->stream != NULL){
+			free(coso->stream);
+			coso->stream = NULL;
+		}
+		coso->stream = NULL;
+		coso->size = 0;
+		return string;
+	}
+	if(nuevo_size < 0){
+		printf("\n[ERROR_STRING]: BUFFER CON TAMAÑO NEGATIVO\n\n");
+
+		if(string != NULL){
+			free(string);
+			string = NULL;
+		}
+		//return "[ERROR]: BUFFER CON TAMAÑO NEGATIVO";
+		exit(EXIT_FAILURE);
+	}
+	void* nuevo_coso = malloc(nuevo_size);
+	memcpy(nuevo_coso, coso->stream + sizeof(int) + size_string, nuevo_size);
+	if(coso->stream != NULL){
+		free(coso->stream);
+		coso->stream = NULL;
+	}
+	coso->stream = nuevo_coso;
+	coso->size = nuevo_size;
+
+	return string;
+}
+
 size_t recibir_size_t_del_buffer(t_buffer* un_buffer){
 	size_t* un_size_t = recibir_generico_del_buffer(un_buffer);
 	size_t valor_retorno = *un_size_t;
@@ -99,7 +300,6 @@ size_t recibir_size_t_del_buffer(t_buffer* un_buffer){
 	return valor_retorno;
 }
 
-// HAY QUE AGREGARLA A CARGA_Y_EXTRACCION
 uint8_t recibir_uint8_del_buffer(t_buffer* un_buffer){
 	uint8_t* un_entero_8 = recibir_generico_del_buffer(un_buffer);
 	uint8_t valor_retorno = *un_entero_8;
@@ -111,7 +311,6 @@ uint8_t recibir_uint8_del_buffer(t_buffer* un_buffer){
 	return valor_retorno;
 }
 
-// HAY QUE AGREGARLA A CARGA_Y_EXTRACCION
 uint32_t recibir_uint32_del_buffer(t_buffer* un_buffer){
 	uint32_t* un_entero_32 = recibir_generico_del_buffer(un_buffer);
 	uint32_t valor_retorno = *un_entero_32;
@@ -135,7 +334,215 @@ char recibir_char_del_buffer(t_buffer* un_buffer){
 	return valor_retorno;
 }
 
-// HAY QUE AGREGAR AL SHARED
+void recibir_mensaje(int socket_cliente, t_log* logger)
+{
+	int size;
+	char* buffer = recibir_buffer(&size, socket_cliente);
+	log_info(logger, "Me llego el mensaje %s", buffer);
+	free(buffer);
+}
+
+void recibir_contexto(t_buffer * unBuffer, t_contexto* contextoRecibido) {
+	contextoRecibido->pID = recibir_int_del_buffer(unBuffer);
+	contextoRecibido->verificador = recibir_int_del_buffer(unBuffer);
+	recibir_registros(unBuffer, contextoRecibido);
+}
+
+void recibir_mochila(t_buffer *unBuffer, t_mochila* mochilaRecibida, t_log* logger) {
+    mochilaRecibida->instruccionAsociada = recibir_string_del_buffer(unBuffer);
+    mochilaRecibida->cantidad_parametros_inicial = recibir_int_del_buffer(unBuffer);
+
+    tipo_dato_parametro TIPO_DATO;
+    int i;
+    for (i = 0; i < mochilaRecibida->cantidad_parametros_inicial; i++) {
+        TIPO_DATO = recibir_int_del_buffer(unBuffer);
+
+        switch (TIPO_DATO) {
+            case T_INT: {
+                int* valor_int = malloc(sizeof(int));
+                if (valor_int == NULL) {
+                    log_error(logger, "No se pudo asignar memoria para el parámetro INT");
+                    continue; // Continuar con el siguiente parámetro
+                }
+                *valor_int = recibir_int_del_buffer(unBuffer);
+                queue_push(mochilaRecibida->parametros, valor_int);
+                log_info(logger, "CARGUE VALOR INT: %d", *valor_int);
+                break;
+            }
+            case T_STRING: {
+                char* valor_string = recibir_string_del_buffer(unBuffer);
+                if (valor_string == NULL) {
+                    log_error(logger, "No se pudo recibir el parámetro STRING");
+                    continue; // Continuar con el siguiente parámetro
+                }
+                queue_push(mochilaRecibida->parametros, valor_string);
+                log_info(logger, "CARGUE VALOR STRING: %s", valor_string);
+                break;
+            }
+            case T_SIZE_T: {
+                size_t* valor_size_t = malloc(sizeof(size_t));
+                if (valor_size_t == NULL) {
+                    log_error(logger, "No se pudo asignar memoria para el parámetro SIZE_T");
+                    continue; // Continuar con el siguiente parámetro
+                }
+                *valor_size_t = recibir_size_t_del_buffer(unBuffer);
+                queue_push(mochilaRecibida->parametros, valor_size_t);
+                log_info(logger, "CARGUE VALOR SIZE_T: %zu", *valor_size_t);
+                break;
+            }
+            case T_UINT32: {
+                uint32_t* valor_uint32 = malloc(sizeof(uint32_t));
+                if (valor_uint32 == NULL) {
+                    log_error(logger, "No se pudo asignar memoria para el parámetro UINT32");
+                    continue; // Continuar con el siguiente parámetro
+                }
+                *valor_uint32 = recibir_uint32_del_buffer(unBuffer);
+                queue_push(mochilaRecibida->parametros, valor_uint32);
+                log_info(logger, "CARGUE VALOR UINT32: %u", *valor_uint32);
+                break;
+            }
+            case T_UINT8: {
+                uint8_t* valor_uint8 = malloc(sizeof(uint8_t));
+                if (valor_uint8 == NULL) {
+                    log_error(logger, "No se pudo asignar memoria para el parámetro UINT8");
+                    continue; // Continuar con el siguiente parámetro
+                }
+                *valor_uint8 = recibir_uint8_del_buffer(unBuffer);
+                queue_push(mochilaRecibida->parametros, valor_uint8);
+                log_info(logger, "CARGUE VALOR UINT8: %u", *valor_uint8);
+                break;
+            }
+            default:
+                log_error(logger, "TIPO DATO NO VALIDO");
+                break;
+        }
+    }
+	
+}
+
+void recibir_registros(t_buffer* unBuffer, t_contexto* contextoRecibido){
+	contextoRecibido->r_cpu->PC = recibir_uint32_del_buffer(unBuffer);
+	contextoRecibido->r_cpu->AX = recibir_uint8_del_buffer(unBuffer);
+	contextoRecibido->r_cpu->BX = recibir_uint8_del_buffer(unBuffer);
+	contextoRecibido->r_cpu->CX = recibir_uint8_del_buffer(unBuffer);
+	contextoRecibido->r_cpu->DX = recibir_uint8_del_buffer(unBuffer);
+	contextoRecibido->r_cpu->EAX = recibir_uint32_del_buffer(unBuffer);
+	contextoRecibido->r_cpu->EBX = recibir_uint32_del_buffer(unBuffer);
+	contextoRecibido->r_cpu->ECX = recibir_uint32_del_buffer(unBuffer);
+	contextoRecibido->r_cpu->EDX = recibir_uint32_del_buffer(unBuffer);
+	contextoRecibido->r_cpu->SI = recibir_uint32_del_buffer(unBuffer);
+	contextoRecibido->r_cpu->DI = recibir_uint32_del_buffer(unBuffer);
+}
+
+// CARGA
+
+void cargar_generico_al_paquete(t_paquete* paquete, void* choclo, int size){
+	if(paquete->buffer->size == 0){
+		paquete->buffer->stream = malloc(sizeof(int) + size);
+		memcpy(paquete->buffer->stream, &size, sizeof(int));
+		memcpy(paquete->buffer->stream + sizeof(int), choclo, size);
+	}else{
+		paquete->buffer->stream = realloc(paquete->buffer->stream,
+												paquete->buffer->size + sizeof(int) + size);
+
+		memcpy(paquete->buffer->stream + paquete->buffer->size, &size, sizeof(int));
+		memcpy(paquete->buffer->stream + paquete->buffer->size + sizeof(int), choclo, size);
+	}
+
+	paquete->buffer->size += sizeof(int);
+	paquete->buffer->size += size;
+}
+
+void cargar_int_al_paquete(t_paquete* paquete, int numero){
+
+	if(paquete->buffer->size == 0){
+		paquete->buffer->stream = malloc(sizeof(int));
+		memcpy(paquete->buffer->stream, &numero, sizeof(int));
+	}else{
+		paquete->buffer->stream = realloc(paquete->buffer->stream,
+											paquete->buffer->size + sizeof(int));
+		/**/
+		memcpy(paquete->buffer->stream + paquete->buffer->size, &numero, sizeof(int));
+	}
+
+	paquete->buffer->size += sizeof(int);
+}
+
+void cargar_char_al_paquete(t_paquete* paquete, char caracter){
+	if(paquete->buffer->size == 0){
+		paquete->buffer->stream = malloc(sizeof(char));
+		memcpy(paquete->buffer->stream, &caracter, sizeof(char));
+	}else{
+		paquete->buffer->stream = realloc(paquete->buffer->stream,
+											paquete->buffer->size + sizeof(char));
+		/**/
+		memcpy(paquete->buffer->stream + paquete->buffer->size, &caracter, sizeof(char));
+	}
+
+	paquete->buffer->size += sizeof(char);
+}
+
+void cargar_string_al_paquete(t_paquete* paquete, char* string){
+	int size_string = strlen(string)+1;
+
+	if(paquete->buffer->size == 0){
+		paquete->buffer->stream = malloc(sizeof(int) + sizeof(char)*size_string);
+		memcpy(paquete->buffer->stream, &size_string, sizeof(int));
+		memcpy(paquete->buffer->stream + sizeof(int), string, sizeof(char)*size_string);
+
+	}else {
+		paquete->buffer->stream = realloc(paquete->buffer->stream,
+										paquete->buffer->size + sizeof(int) + sizeof(char)*size_string);
+		/**/
+		memcpy(paquete->buffer->stream + paquete->buffer->size, &size_string, sizeof(int));
+		memcpy(paquete->buffer->stream + paquete->buffer->size + sizeof(int), string, sizeof(char)*size_string);
+
+	}
+	paquete->buffer->size += sizeof(int);
+	paquete->buffer->size += sizeof(char)*size_string;
+}
+
+void cargar_uint8_al_paquete(t_paquete* un_paquete, uint8_t uint8_value){
+	cargar_generico_al_paquete(un_paquete, &uint8_value, sizeof(uint8_t));
+}
+
+void cargar_uint32_al_paquete(t_paquete* un_paquete, uint32_t uint32_value){
+	cargar_generico_al_paquete(un_paquete, &uint32_value, sizeof(uint32_t));
+}
+
+void cargar_size_t_al_paquete(t_paquete* un_paquete, size_t size_t_value){
+	cargar_generico_al_paquete(un_paquete, &size_t_value, sizeof(size_t));
+}
+
+void agregar_registros_a_paquete(t_paquete * un_paquete, t_registrosCPU* registroRecibido){
+
+	cargar_uint32_al_paquete(un_paquete, registroRecibido->PC);
+	cargar_uint8_al_paquete(un_paquete, registroRecibido->AX);
+	cargar_uint8_al_paquete(un_paquete, registroRecibido->BX);
+	cargar_uint8_al_paquete(un_paquete, registroRecibido->CX);
+	cargar_uint8_al_paquete(un_paquete, registroRecibido->DX);
+	cargar_uint32_al_paquete(un_paquete, registroRecibido->EAX);
+	cargar_uint32_al_paquete(un_paquete, registroRecibido->EBX);
+	cargar_uint32_al_paquete(un_paquete, registroRecibido->ECX);
+	cargar_uint32_al_paquete(un_paquete, registroRecibido->EDX);
+	cargar_uint32_al_paquete(un_paquete, registroRecibido->SI);
+	cargar_uint32_al_paquete(un_paquete, registroRecibido->DI);
+}
+
+// SERVICIOS
+
+void limpiar_buffer_entrada() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+void safe_free(void* elemento) {
+    if (elemento != NULL) {
+        free(elemento);
+		elemento = NULL;
+    }
+}
+
 void ejecutar_en_un_hilo_nuevo_detach(void (*f)(void*) ,void* struct_arg){
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*)f, struct_arg);
@@ -163,61 +570,6 @@ int convertirInterfazAEnum(const char* tipo_entradasalida) {
     }
 }
 
-void destruir_buffer(t_buffer* buffer) {
-    if (buffer == NULL) {
-        return;
-    }
-
-    if (buffer->stream != NULL) {
-        free(buffer->stream);
-		buffer->stream = NULL;
-    }
-	
-	if (buffer != NULL) {
-
-    	free(buffer);
-		buffer = NULL;
-    }
-
-}
-
-int recibir_operacion(int socket_cliente)
-{
-	int cod_op;
-	if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) > 0)
-	{
-		return cod_op;
-	}
-	else
-	{
-		close(socket_cliente);
-		return -1;
-	}
-}
-
-int crear_conexion(char *ip, char* puerto)
-{
-	struct addrinfo hints;
-	struct addrinfo *server_info;
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-
-	getaddrinfo(ip, puerto, &hints, &server_info);
-
-	int socket_cliente = 0;
-
-	socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
-
-	if(connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1)
-		printf("Error al conectar el socket ");
-
-	freeaddrinfo(server_info);
-
-	return socket_cliente;
-}
 
 t_list* leer_archivo_y_cargar_instrucciones(const char* path_archivo) {
     FILE* archivo = fopen(path_archivo, "rt");
@@ -330,474 +682,37 @@ t_list* leer_archivo_y_cargar_instrucciones(const char* path_archivo) {
     return instrucciones;
 }
 
-void* recibir_buffer(int* size, int socket_cliente)
-{
-	void * buffer;
+// DESTRUIR 
 
-	recv(socket_cliente, size, sizeof(int), MSG_WAITALL);
-	buffer = malloc(*size);
-	recv(socket_cliente, buffer, *size, MSG_WAITALL);
+void destruir_buffer(t_buffer* buffer) {
+    if (buffer == NULL) {
+        return;
+    }
 
-	return buffer;
-}
-
-void crear_buffer(t_paquete* paquete)
-{
-	paquete->buffer = malloc(sizeof(t_buffer));
-	paquete->buffer->size = 0;
-	paquete->buffer->stream = NULL;
-}
-
-t_paquete* __crear_paquete(void)
-{
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-	paquete->codigo_operacion = PAQUETE;
-	crear_buffer(paquete);
-	return paquete;
-}
-
-void __enviar_paquete(t_paquete* paquete, int socket_cliente)
-{
-	int bytes = paquete->buffer->size + 2*sizeof(int);
-	void* a_enviar = serializar_paquete(paquete, bytes);
-
-	send(socket_cliente, a_enviar, bytes, 0);
-
-	if(a_enviar != NULL){
-
-		free(a_enviar);
-		a_enviar = NULL;
-	}
-}
-
-void* serializar_paquete(t_paquete* paquete, int bytes)
-{
-	void * magic = malloc(bytes);
-	int desplazamiento = 0;
-
-	memcpy(magic + desplazamiento, &(paquete->codigo_operacion), sizeof(int));
-	desplazamiento+= sizeof(int);
-	memcpy(magic + desplazamiento, &(paquete->buffer->size), sizeof(int));
-	desplazamiento+= sizeof(int);
-	memcpy(magic + desplazamiento, paquete->buffer->stream, paquete->buffer->size);
-	desplazamiento+= paquete->buffer->size;
-
-	return magic;
-}
-
-void __eliminar_paquete(t_paquete* paquete)
-{
-	free(paquete->buffer->stream);
-	free(paquete->buffer);
-	free(paquete);
-}
-
-t_paquete* crear_super_paquete(op_code code_op){
-	t_paquete* super_paquete = malloc(sizeof(t_paquete));
-	super_paquete->codigo_operacion = code_op;
-	crear_buffer(super_paquete);
-	return  super_paquete;
-}
-
-void cargar_int_al_super_paquete(t_paquete* paquete, int numero){
-	if(paquete->buffer->size == 0){
-		paquete->buffer->stream = malloc(sizeof(int));
-		memcpy(paquete->buffer->stream, &numero, sizeof(int));
-	}else{
-		paquete->buffer->stream = realloc(paquete->buffer->stream,
-											paquete->buffer->size + sizeof(int));
-		/**/
-		memcpy(paquete->buffer->stream + paquete->buffer->size, &numero, sizeof(int));
-	}
-
-	paquete->buffer->size += sizeof(int);
-}
-
-void cargar_char_al_super_paquete(t_paquete* paquete, char caracter){
-	if(paquete->buffer->size == 0){
-		paquete->buffer->stream = malloc(sizeof(char));
-		memcpy(paquete->buffer->stream, &caracter, sizeof(char));
-	}else{
-		paquete->buffer->stream = realloc(paquete->buffer->stream,
-											paquete->buffer->size + sizeof(char));
-		/**/
-		memcpy(paquete->buffer->stream + paquete->buffer->size, &caracter, sizeof(char));
-	}
-
-	paquete->buffer->size += sizeof(char);
-}
-
-void cargar_string_al_super_paquete(t_paquete* paquete, char* string){
-	int size_string = strlen(string)+1;
-
-	if(paquete->buffer->size == 0){
-		paquete->buffer->stream = malloc(sizeof(int) + sizeof(char)*size_string);
-		memcpy(paquete->buffer->stream, &size_string, sizeof(int));
-		memcpy(paquete->buffer->stream + sizeof(int), string, sizeof(char)*size_string);
-
-	}else {
-		paquete->buffer->stream = realloc(paquete->buffer->stream,
-										paquete->buffer->size + sizeof(int) + sizeof(char)*size_string);
-		/**/
-		memcpy(paquete->buffer->stream + paquete->buffer->size, &size_string, sizeof(int));
-		memcpy(paquete->buffer->stream + paquete->buffer->size + sizeof(int), string, sizeof(char)*size_string);
-
-	}
-	paquete->buffer->size += sizeof(int);
-	paquete->buffer->size += sizeof(char)*size_string;
-}
-
-void cargar_choclo_al_super_paquete(t_paquete* paquete, void* choclo, int size){
-	if(paquete->buffer->size == 0){
-		paquete->buffer->stream = malloc(sizeof(int) + size);
-		memcpy(paquete->buffer->stream, &size, sizeof(int));
-		memcpy(paquete->buffer->stream + sizeof(int), choclo, size);
-	}else{
-		paquete->buffer->stream = realloc(paquete->buffer->stream,
-												paquete->buffer->size + sizeof(int) + size);
-
-		memcpy(paquete->buffer->stream + paquete->buffer->size, &size, sizeof(int));
-		memcpy(paquete->buffer->stream + paquete->buffer->size + sizeof(int), choclo, size);
-	}
-
-	paquete->buffer->size += sizeof(int);
-	paquete->buffer->size += size;
-}
-
-// HAY QUE AGREGARLA A CARGA_Y_EXTRACCION
-void cargar_uint8_al_super_paquete(t_paquete* un_paquete, uint8_t uint8_value){
-	cargar_choclo_al_super_paquete(un_paquete, &uint8_value, sizeof(uint8_t));
-}
-
-// HAY QUE AGREGARLA A CARGA_Y_EXTRACCION
-void cargar_uint32_al_super_paquete(t_paquete* un_paquete, uint32_t uint32_value){
-	cargar_choclo_al_super_paquete(un_paquete, &uint32_value, sizeof(uint32_t));
-}
-
-// HAY QUE AGREGARLA A CARGA_Y_EXTRACCION
-void cargar_size_t_al_super_paquete(t_paquete* un_paquete, size_t size_t_value){
-	cargar_choclo_al_super_paquete(un_paquete, &size_t_value, sizeof(size_t));
-}
-
-int recibir_int_del_buffer(t_buffer* coso){
-	if(coso->size == 0){
-		printf("\n[ERROR] Al intentar extraer un INT de un t_buffer vacio\n\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if(coso->size < 0){
-		printf("\n[ERROR] Esto es raro. El t_buffer contiene un size NEGATIVO \n\n");
-		exit(EXIT_FAILURE);
-	}
-
-	int valor_a_devolver;
-	memcpy(&valor_a_devolver, coso->stream, sizeof(int));
-
-	int nuevo_size = coso->size - sizeof(int);
-	if(nuevo_size == 0){
-
-		if(coso->stream != NULL){
-			free(coso->stream);
-			coso->stream = NULL;
-		}
-
-		coso->size = 0;
-		return valor_a_devolver;
-	}
-	if(nuevo_size < 0){
-		printf("\n[ERROR_INT]: BUFFER CON TAMAÑO NEGATIVO\n\n");
-		//free(valor_a_devolver);
-		//return 0;
-		exit(EXIT_FAILURE);
-	}
-	void* nuevo_coso = malloc(nuevo_size);
-	memcpy(nuevo_coso, coso->stream + sizeof(int), nuevo_size);
-	if(coso->stream != NULL){
-		free(coso->stream);
-		coso->stream = NULL;
-	}
-	coso->stream = nuevo_coso;
-	coso->size = nuevo_size;
-
-	return valor_a_devolver;
-}
-
-char* recibir_string_del_buffer(t_buffer* coso){
-
-    //----------------- Formato Inicial----------------------------
-	if(coso->size == 0){
-		printf("\n[ERROR] Al intentar extraer un contenido de un t_buffer vacio\n\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if(coso->size < 0){
-		printf("\n[ERROR] Esto es raro. El t_buffer contiene un size NEGATIVO \n\n");
-		exit(EXIT_FAILURE);
-	}
-
-	int size_string;
-	char* string;
-	memcpy(&size_string, coso->stream, sizeof(int));
-	//string = malloc(sizeof(size_string));
-	string = malloc(size_string);
-	memcpy(string, coso->stream + sizeof(int), size_string);
-
-	int nuevo_size = coso->size - sizeof(int) - size_string;
-	if(nuevo_size == 0){
-		if(coso->stream != NULL){
-			free(coso->stream);
-			coso->stream = NULL;
-		}
-		coso->stream = NULL;
-		coso->size = 0;
-		return string;
-	}
-	if(nuevo_size < 0){
-		printf("\n[ERROR_STRING]: BUFFER CON TAMAÑO NEGATIVO\n\n");
-
-		if(string != NULL){
-			free(string);
-			string = NULL;
-		}
-		//return "[ERROR]: BUFFER CON TAMAÑO NEGATIVO";
-		exit(EXIT_FAILURE);
-	}
-	void* nuevo_coso = malloc(nuevo_size);
-	memcpy(nuevo_coso, coso->stream + sizeof(int) + size_string, nuevo_size);
-	if(coso->stream != NULL){
-		free(coso->stream);
-		coso->stream = NULL;
-	}
-	coso->stream = nuevo_coso;
-	coso->size = nuevo_size;
-
-	return string;
-}
-
-
-void* recibir_generico_del_buffer(t_buffer* un_buffer){
-	if(un_buffer->size == 0){
-		printf("\n[ERROR] Al intentar extraer un contenido de un t_buffer vacio\n\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if(un_buffer->size < 0){
-		printf("\n[ERROR] Esto es raro. El t_buffer contiene un size NEGATIVO \n\n");
-		exit(EXIT_FAILURE);
-	}
-
-	int size_generico;
-	void* generico;
-	memcpy(&size_generico, un_buffer->stream, sizeof(int));
-	generico = malloc(size_generico);
-	memcpy(generico, un_buffer->stream + sizeof(int), size_generico);
-
-	int nuevo_size = un_buffer->size - sizeof(int) - size_generico;
-	if(nuevo_size == 0){
-		un_buffer->size = 0;
-		free(un_buffer->stream);
-		un_buffer->stream = NULL;
-		return generico;
-	}
-	if(nuevo_size < 0){
-		printf("\n[ERROR_CHICLO]: BUFFER CON TAMAÑO NEGATIVO\n\n");
-		exit(EXIT_FAILURE);
-	}
-	void* nuevo_generico = malloc(nuevo_size);
-	memcpy(nuevo_generico, un_buffer->stream + sizeof(int) + size_generico, nuevo_size);
-	free(un_buffer->stream);
-	un_buffer->stream = nuevo_generico;
-	un_buffer->size = nuevo_size;
-	// free(nuevo_generico);
-
-	return generico;
-}
-
-void* recibir_choclo_del_buffer(t_buffer* coso){
-	if(coso->size == 0){
-		printf("\n[ERROR] Al intentar extraer un contenido de un t_buffer vacio\n\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if(coso->size < 0){
-		printf("\n[ERROR] Esto es raro. El t_buffer contiene un size NEGATIVO \n\n");
-		exit(EXIT_FAILURE);
-	}
-
-	int size_choclo;
-	void* choclo;
-	memcpy(&size_choclo, coso->stream, sizeof(int));
-	choclo = malloc(size_choclo);
-	memcpy(choclo, coso->stream + sizeof(int), size_choclo);
-
-	int nuevo_size = coso->size - sizeof(int) - size_choclo;
-	if(nuevo_size == 0){
-		if(coso->stream != NULL){
-			free(coso->stream);
-			coso->stream = NULL;
-		}
-		coso->size = 0;
-		return choclo;
-	}
-	if(nuevo_size < 0){
-		printf("\n[ERROR_CHICLO]: BUFFER CON TAMAÑO NEGATIVO\n\n");
-		//free(choclo);
-		//return "";
-		exit(EXIT_FAILURE);
-	}
-	void* nuevo_choclo = malloc(nuevo_size);
-	memcpy(nuevo_choclo, coso->stream + sizeof(int) + size_choclo, nuevo_size);
-	if(coso->stream != NULL){
-			free(coso->stream);
-			coso->stream = NULL;
-		}
-	coso->stream = nuevo_choclo;
-	coso->size = nuevo_size;
-
-	return choclo;
-}
-
-t_buffer* recibir_paquete(int conexion){
-	t_buffer* unBuffer = malloc(sizeof(t_buffer));
-	int size;
-	unBuffer->stream = recibir_buffer(&size, conexion);
-	unBuffer->size = size;
-	return unBuffer;
-}
-
-
-void recibir_contexto(t_buffer * unBuffer, t_contexto* contextoRecibido) {
-	contextoRecibido->pID = recibir_int_del_buffer(unBuffer);
-	contextoRecibido->verificador = recibir_int_del_buffer(unBuffer);
-	recibir_registros(unBuffer, contextoRecibido);
-}
-
-void recibir_mochila(t_buffer *unBuffer, t_mochila* mochilaRecibida, t_log* logger) {
-    mochilaRecibida->instruccionAsociada = recibir_string_del_buffer(unBuffer);
-    mochilaRecibida->cantidad_parametros_inicial = recibir_int_del_buffer(unBuffer);
-
-    tipo_dato_parametro TIPO_DATO;
-    int i;
-    for (i = 0; i < mochilaRecibida->cantidad_parametros_inicial; i++) {
-        TIPO_DATO = recibir_int_del_buffer(unBuffer);
-
-        switch (TIPO_DATO) {
-            case T_INT: {
-                int* valor_int = malloc(sizeof(int));
-                if (valor_int == NULL) {
-                    log_error(logger, "No se pudo asignar memoria para el parámetro INT");
-                    continue; // Continuar con el siguiente parámetro
-                }
-                *valor_int = recibir_int_del_buffer(unBuffer);
-                queue_push(mochilaRecibida->parametros, valor_int);
-                log_info(logger, "CARGUE VALOR INT: %d", *valor_int);
-                break;
-            }
-            case T_STRING: {
-                char* valor_string = recibir_string_del_buffer(unBuffer);
-                if (valor_string == NULL) {
-                    log_error(logger, "No se pudo recibir el parámetro STRING");
-                    continue; // Continuar con el siguiente parámetro
-                }
-                queue_push(mochilaRecibida->parametros, valor_string);
-                log_info(logger, "CARGUE VALOR STRING: %s", valor_string);
-                break;
-            }
-            case T_SIZE_T: {
-                size_t* valor_size_t = malloc(sizeof(size_t));
-                if (valor_size_t == NULL) {
-                    log_error(logger, "No se pudo asignar memoria para el parámetro SIZE_T");
-                    continue; // Continuar con el siguiente parámetro
-                }
-                *valor_size_t = recibir_size_t_del_buffer(unBuffer);
-                queue_push(mochilaRecibida->parametros, valor_size_t);
-                log_info(logger, "CARGUE VALOR SIZE_T: %zu", *valor_size_t);
-                break;
-            }
-            case T_UINT32: {
-                uint32_t* valor_uint32 = malloc(sizeof(uint32_t));
-                if (valor_uint32 == NULL) {
-                    log_error(logger, "No se pudo asignar memoria para el parámetro UINT32");
-                    continue; // Continuar con el siguiente parámetro
-                }
-                *valor_uint32 = recibir_uint32_del_buffer(unBuffer);
-                queue_push(mochilaRecibida->parametros, valor_uint32);
-                log_info(logger, "CARGUE VALOR UINT32: %u", *valor_uint32);
-                break;
-            }
-            case T_UINT8: {
-                uint8_t* valor_uint8 = malloc(sizeof(uint8_t));
-                if (valor_uint8 == NULL) {
-                    log_error(logger, "No se pudo asignar memoria para el parámetro UINT8");
-                    continue; // Continuar con el siguiente parámetro
-                }
-                *valor_uint8 = recibir_uint8_del_buffer(unBuffer);
-                queue_push(mochilaRecibida->parametros, valor_uint8);
-                log_info(logger, "CARGUE VALOR UINT8: %u", *valor_uint8);
-                break;
-            }
-            default:
-                log_error(logger, "TIPO DATO NO VALIDO");
-                break;
-        }
+    if (buffer->stream != NULL) {
+        free(buffer->stream);
+		buffer->stream = NULL;
     }
 	
-}
+	if (buffer != NULL) {
 
-
-void agregar_registros_a_paquete(t_paquete * un_paquete, t_registrosCPU* registroRecibido){
-
-	cargar_uint32_al_super_paquete(un_paquete, registroRecibido->PC);
-	cargar_uint8_al_super_paquete(un_paquete, registroRecibido->AX);
-	cargar_uint8_al_super_paquete(un_paquete, registroRecibido->BX);
-	cargar_uint8_al_super_paquete(un_paquete, registroRecibido->CX);
-	cargar_uint8_al_super_paquete(un_paquete, registroRecibido->DX);
-	cargar_uint32_al_super_paquete(un_paquete, registroRecibido->EAX);
-	cargar_uint32_al_super_paquete(un_paquete, registroRecibido->EBX);
-	cargar_uint32_al_super_paquete(un_paquete, registroRecibido->ECX);
-	cargar_uint32_al_super_paquete(un_paquete, registroRecibido->EDX);
-	cargar_uint32_al_super_paquete(un_paquete, registroRecibido->SI);
-	cargar_uint32_al_super_paquete(un_paquete, registroRecibido->DI);
-}
-
-void recibir_registros(t_buffer* unBuffer, t_contexto* contextoRecibido){
-	contextoRecibido->r_cpu->PC = recibir_uint32_del_buffer(unBuffer);
-	contextoRecibido->r_cpu->AX = recibir_uint8_del_buffer(unBuffer);
-	contextoRecibido->r_cpu->BX = recibir_uint8_del_buffer(unBuffer);
-	contextoRecibido->r_cpu->CX = recibir_uint8_del_buffer(unBuffer);
-	contextoRecibido->r_cpu->DX = recibir_uint8_del_buffer(unBuffer);
-	contextoRecibido->r_cpu->EAX = recibir_uint32_del_buffer(unBuffer);
-	contextoRecibido->r_cpu->EBX = recibir_uint32_del_buffer(unBuffer);
-	contextoRecibido->r_cpu->ECX = recibir_uint32_del_buffer(unBuffer);
-	contextoRecibido->r_cpu->EDX = recibir_uint32_del_buffer(unBuffer);
-	contextoRecibido->r_cpu->SI = recibir_uint32_del_buffer(unBuffer);
-	contextoRecibido->r_cpu->DI = recibir_uint32_del_buffer(unBuffer);
+    	free(buffer);
+		buffer = NULL;
+    }
 }
 
 void destruir_contexto_por_param(t_contexto* contexto) {
     if (contexto == NULL) {
-        return; // No hay nada que liberar
+        return; 
     }
     if (contexto->r_cpu != NULL) {
-        free(contexto->r_cpu); // Liberar la memoria para los registros de CPU
+        free(contexto->r_cpu); 
 		contexto->r_cpu = NULL; 
     }
 
 	if(contexto != NULL){
 
-    	free(contexto); // Liberar la memoria del contexto
+    	free(contexto);
 		contexto = NULL;
 	}
-}
-
-void limpiar_buffer_entrada() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
-
-void safe_free(void* elemento) {
-    if (elemento != NULL) {
-        free(elemento);
-		elemento = NULL;
-    }
 }

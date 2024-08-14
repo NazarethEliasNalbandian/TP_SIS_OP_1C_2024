@@ -16,7 +16,7 @@ void atender_entradasalida_memoria() {
                     data_leida = NULL;
                 }
 
-                data_leida = (char*) recibir_choclo_del_buffer(unBuffer);
+                data_leida = (char*) recibir_generico_del_buffer(unBuffer);
                 printf("DATO RECIBIDO DE MEMORIA: %s\n", data_leida);
                 destruir_buffer(unBuffer);
                 
@@ -45,13 +45,13 @@ void atender_entradasalida_memoria() {
 }
 
 void notificar_memoria_escritura(int pid, int dir_fisica, size_t tamanio, void* data) {
-    t_paquete * paquete = crear_super_paquete(ESCRITURA_BLOQUE_ENTRADASALIDA_MEMORIA);
+    t_paquete * paquete = crear_paquete(ESCRITURA_BLOQUE_ENTRADASALIDA_MEMORIA);
 
-    cargar_int_al_super_paquete(paquete, pid);
-    cargar_int_al_super_paquete(paquete, dir_fisica);
-    cargar_size_t_al_super_paquete(paquete, tamanio);
-    cargar_int_al_super_paquete(paquete, T_STRING);
-    cargar_choclo_al_super_paquete(paquete, data, tamanio);
+    cargar_int_al_paquete(paquete, pid);
+    cargar_int_al_paquete(paquete, dir_fisica);
+    cargar_size_t_al_paquete(paquete, tamanio);
+    cargar_int_al_paquete(paquete, T_STRING);
+    cargar_generico_al_paquete(paquete, data, tamanio);
 
     enviar_paquete(paquete, fd_memoria);
     eliminar_paquete(paquete);
@@ -59,12 +59,12 @@ void notificar_memoria_escritura(int pid, int dir_fisica, size_t tamanio, void* 
 
 void notificar_memoria_lectura(int pid, int dir_fisica, size_t tamanio) {
         
-    t_paquete * paquete = crear_super_paquete(LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA);
+    t_paquete * paquete = crear_paquete(LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA);
 
-    cargar_int_al_super_paquete(paquete, pid);
-    cargar_int_al_super_paquete(paquete, dir_fisica);
-    cargar_size_t_al_super_paquete(paquete, tamanio);
-    cargar_int_al_super_paquete(paquete, T_STRING);
+    cargar_int_al_paquete(paquete, pid);
+    cargar_int_al_paquete(paquete, dir_fisica);
+    cargar_size_t_al_paquete(paquete, tamanio);
+    cargar_int_al_paquete(paquete, T_STRING);
 
     enviar_paquete(paquete, fd_memoria);
     eliminar_paquete(paquete);

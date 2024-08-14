@@ -1,8 +1,6 @@
 #ifndef E_GESTOR_H_
 #define E_GESTOR_H_
 
-#include <pthread.h>
-#include <semaphore.h>
 #include "../../utils/include/shared.h"  
 
 typedef struct{

@@ -16,9 +16,9 @@ void plp_planifica(){
 	if(un_pcb != NULL){
 
 		// //Enviar Mensaje a memoria para que inicialice estructuras
-		t_paquete* un_paquete = crear_super_paquete(ESTRUCTURA_INICIADA_KERNEL_MEMORIA);
-		cargar_string_al_super_paquete(un_paquete, un_pcb->path);
-		cargar_int_al_super_paquete(un_paquete, un_pcb->pid);
+		t_paquete* un_paquete = crear_paquete(ESTRUCTURA_INICIADA_KERNEL_MEMORIA);
+		cargar_string_al_paquete(un_paquete, un_pcb->path);
+		cargar_int_al_paquete(un_paquete, un_pcb->pid);
 		enviar_paquete(un_paquete, fd_memoria);
 
 		sem_wait(&sem_estructura_iniciada);

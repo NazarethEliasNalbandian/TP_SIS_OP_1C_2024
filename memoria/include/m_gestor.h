@@ -1,10 +1,10 @@
 #ifndef M_GESTOR_H_
 #define M_GESTOR_H_
 
-#include <stdio.h>
-#include <stdlib.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <pthread.h>
 #include "../../utils/include/shared.h"
-#include <pthread.h>
 
 typedef struct{
 	int pid;

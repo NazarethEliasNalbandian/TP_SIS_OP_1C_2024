@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "shared.h": "c",
+        "config.h": "c",
+        "history.h": "c"
+    }
+}

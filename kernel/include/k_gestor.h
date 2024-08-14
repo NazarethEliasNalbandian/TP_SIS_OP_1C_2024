@@ -1,13 +1,7 @@
 #ifndef K_GESTOR_H_
 #define K_GESTOR_H_
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <readline/readline.h>
 #include "../../utils/include/shared.h"
-#include <pthread.h>
-
 
 typedef enum{
    FIFO,

@@ -172,8 +172,8 @@ int server_escucha_entrada_salida(){
 }
 
 void enviar_peticion_nombre_y_tipo(int copia_socket) {
-    t_paquete * paquete = crear_super_paquete(NOMBRE_ENTRADA_SALIDA);
-    cargar_string_al_super_paquete(paquete, "PETICION NOMBRE Y TIPO");
+    t_paquete * paquete = crear_paquete(NOMBRE_ENTRADA_SALIDA);
+    cargar_string_al_paquete(paquete, "PETICION NOMBRE Y TIPO");
     enviar_paquete(paquete, copia_socket);
     eliminar_paquete(paquete);
 }
