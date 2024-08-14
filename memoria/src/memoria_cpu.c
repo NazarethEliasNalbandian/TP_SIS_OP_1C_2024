@@ -6,8 +6,8 @@ void atender_memoria_cpu(){
 	bool control_key = 1;
 
 	//Enviar tamaño de pagina a CPU _
-	t_paquete* un_paquete = __crear_super_paquete(PETICION_INFO_CPU_MEMORIA);
-	__cargar_int_al_super_paquete(un_paquete, TAM_PAGINA);
+	t_paquete* un_paquete = crear_super_paquete(PETICION_INFO_CPU_MEMORIA);
+	cargar_int_al_super_paquete(un_paquete, TAM_PAGINA);
     enviar_paquete(un_paquete, fd_cpu);
     eliminar_paquete(un_paquete);
 	while (control_key) {
@@ -15,23 +15,23 @@ void atender_memoria_cpu(){
 		int cod_op = recibir_operacion(fd_cpu);
 		switch (cod_op) {
 		case PETICION_DE_INSTRUCCIONES_CPU_MEMORIA: //[int pid][int ip]
-			unBuffer = __recibiendo_super_paquete(fd_cpu);
+			unBuffer = recibir_paquete(fd_cpu);
 			atender_peticion_de_instruccion(unBuffer);
 			break;
 		case CONSULTA_DE_PAGINA_CPU_MEMORIA: //[int pid][int nro_pagina]
-			unBuffer = __recibiendo_super_paquete(fd_cpu);
+			unBuffer = recibir_paquete(fd_cpu);
 			atender_consulta_de_pagina(unBuffer); 
 			break;
 		case LECTURA_BLOQUE_CPU_MEMORIA: //[int pid][int dir_fisica]
-			unBuffer = __recibiendo_super_paquete(fd_cpu);
+			unBuffer = recibir_paquete(fd_cpu);
 			leer_valor_de_dir_fisica(unBuffer); 
 			break;
 		case ESCRITURA_BLOQUE_CPU_MEMORIA: ////[int pid][int dir_fisica][uint32_t info]
-			unBuffer = __recibiendo_super_paquete(fd_cpu);
+			unBuffer = recibir_paquete(fd_cpu);
 			escribir_valor_en_dir_fisica(unBuffer);
 			break;
 		case RESIZE_CPU_MEMORIA:
-			unBuffer = __recibiendo_super_paquete(fd_cpu); //[int pid][int nuevo_tamaño_en_bytes]
+			unBuffer = recibir_paquete(fd_cpu); //[int pid][int nuevo_tamaño_en_bytes]
 			atender_resize(unBuffer);
 			break;
 		case -1:
@@ -46,8 +46,8 @@ void atender_memoria_cpu(){
 }
 
 void atender_peticion_de_instruccion(t_buffer* un_buffer){
-	int pid = __recibir_int_del_buffer(un_buffer);
-	uint32_t ip = extraer_uint32_del_buffer(un_buffer);
+	int pid = recibir_int_del_buffer(un_buffer);
+	uint32_t ip = recibir_uint32_del_buffer(un_buffer);
 	destruir_buffer(un_buffer);
 
 	//Buscar proceso por el PID
@@ -63,8 +63,8 @@ void atender_peticion_de_instruccion(t_buffer* un_buffer){
 }
 
 void atender_consulta_de_pagina(t_buffer* unBuffer){
-	int pid = __recibir_int_del_buffer(unBuffer);
-	int nro_pagina = __recibir_int_del_buffer(unBuffer);
+	int pid = recibir_int_del_buffer(unBuffer);
+	int nro_pagina = recibir_int_del_buffer(unBuffer);
 	destruir_buffer(unBuffer);
 
 	t_proceso* un_proceso = obtener_proceso_por_id(pid);
@@ -89,10 +89,10 @@ void atender_consulta_de_pagina(t_buffer* unBuffer){
 }
 
 void leer_valor_de_dir_fisica(t_buffer* un_buffer){
-	int pid = __recibir_int_del_buffer(un_buffer);
-	int dir_fisica = __recibir_int_del_buffer(un_buffer);
-	size_t tamanio = extraer_size_t_del_buffer(un_buffer);
-	tipo_dato_parametro tipo_dato = __recibir_int_del_buffer(un_buffer);
+	int pid = recibir_int_del_buffer(un_buffer);
+	int dir_fisica = recibir_int_del_buffer(un_buffer);
+	size_t tamanio = recibir_size_t_del_buffer(un_buffer);
+	tipo_dato_parametro tipo_dato = recibir_int_del_buffer(un_buffer);
 	destruir_buffer(un_buffer);
 
 	if(tipo_dato == T_UINT32){
@@ -109,11 +109,11 @@ void leer_valor_de_dir_fisica(t_buffer* un_buffer){
 }
 
 void escribir_valor_en_dir_fisica(t_buffer* un_buffer){
-	int pid = __recibir_int_del_buffer(un_buffer);
-	int dir_fisica = __recibir_int_del_buffer(un_buffer);
-	size_t tamanio = extraer_size_t_del_buffer(un_buffer);
-	tipo_dato_parametro tipo_dato = __recibir_int_del_buffer(un_buffer);
-	void* valor = __recibir_choclo_del_buffer(un_buffer);
+	int pid = recibir_int_del_buffer(un_buffer);
+	int dir_fisica = recibir_int_del_buffer(un_buffer);
+	size_t tamanio = recibir_size_t_del_buffer(un_buffer);
+	tipo_dato_parametro tipo_dato = recibir_int_del_buffer(un_buffer);
+	void* valor = recibir_choclo_del_buffer(un_buffer);
 
 	log_trace(memoria_log_debug,"DIR: %d", dir_fisica);
 
@@ -152,8 +152,8 @@ void escribir_valor_en_dir_fisica(t_buffer* un_buffer){
 }
 
 void atender_resize(t_buffer* un_buffer) {
-	int pid = __recibir_int_del_buffer(un_buffer);
-	int nuevo_tamanio = __recibir_int_del_buffer(un_buffer);
+	int pid = recibir_int_del_buffer(un_buffer);
+	int nuevo_tamanio = recibir_int_del_buffer(un_buffer);
 
 	destruir_buffer(un_buffer);
 
@@ -185,8 +185,8 @@ void atender_resize(t_buffer* un_buffer) {
 void enviar_instruccion(char* instruccion){
 	// M -> CPU : [char* ]
 	retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(PETICION_DE_INSTRUCCIONES_CPU_MEMORIA);
-	__cargar_string_al_super_paquete(un_paquete, instruccion);
+	t_paquete* un_paquete = crear_super_paquete(PETICION_DE_INSTRUCCIONES_CPU_MEMORIA);
+	cargar_string_al_super_paquete(un_paquete, instruccion);
 	enviar_paquete(un_paquete, fd_cpu);
 	eliminar_paquete(un_paquete);
 }
@@ -194,8 +194,8 @@ void enviar_instruccion(char* instruccion){
 void enviar_respuesta_por_consulta_de_pagina(int respuesta_a_cpu){
 	// M -> CPU : [int nro_bloque_o_(-1)_pagefault]
 	retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(CONSULTA_DE_PAGINA_CPU_MEMORIA);
-	__cargar_int_al_super_paquete(un_paquete, respuesta_a_cpu);
+	t_paquete* un_paquete = crear_super_paquete(CONSULTA_DE_PAGINA_CPU_MEMORIA);
+	cargar_int_al_super_paquete(un_paquete, respuesta_a_cpu);
 	enviar_paquete(un_paquete, fd_cpu);
 	eliminar_paquete(un_paquete);
 }
@@ -203,9 +203,9 @@ void enviar_respuesta_por_consulta_de_pagina(int respuesta_a_cpu){
 void enviar_uint32_por_lectura(uint32_t valor, tipo_dato_parametro tipo_dato){
     // M -> CPU : [void* valor]
     retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
-	__cargar_int_al_super_paquete(un_paquete, tipo_dato);
-    __cargar_uint32_al_super_paquete(un_paquete, valor);
+	t_paquete* un_paquete = crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
+	cargar_int_al_super_paquete(un_paquete, tipo_dato);
+    cargar_uint32_al_super_paquete(un_paquete, valor);
     enviar_paquete(un_paquete, fd_cpu);
     eliminar_paquete(un_paquete);
 }
@@ -213,9 +213,9 @@ void enviar_uint32_por_lectura(uint32_t valor, tipo_dato_parametro tipo_dato){
 void enviar_uint8_por_lectura(uint8_t valor, tipo_dato_parametro tipo_dato){
     // M -> CPU : [void* valor]
     retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
-	__cargar_int_al_super_paquete(un_paquete, tipo_dato);
-    __cargar_uint8_al_super_paquete(un_paquete, valor);
+	t_paquete* un_paquete = crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
+	cargar_int_al_super_paquete(un_paquete, tipo_dato);
+    cargar_uint8_al_super_paquete(un_paquete, valor);
     enviar_paquete(un_paquete, fd_cpu);
     eliminar_paquete(un_paquete);
 }
@@ -223,9 +223,9 @@ void enviar_uint8_por_lectura(uint8_t valor, tipo_dato_parametro tipo_dato){
 void enviar_string_por_lectura(char* valor, tipo_dato_parametro tipo_dato){
     // M -> CPU : [void* valor]
     retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
-	__cargar_int_al_super_paquete(un_paquete, tipo_dato);
-    __cargar_string_al_super_paquete(un_paquete, valor);
+	t_paquete* un_paquete = crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
+	cargar_int_al_super_paquete(un_paquete, tipo_dato);
+    cargar_string_al_super_paquete(un_paquete, valor);
     enviar_paquete(un_paquete, fd_cpu);
     eliminar_paquete(un_paquete);
 
@@ -240,9 +240,9 @@ void enviar_string_por_lectura(char* valor, tipo_dato_parametro tipo_dato){
 void enviar_valor_por_lectura(void* valor, tipo_dato_parametro tipo_dato, size_t tamanio){
     // M -> CPU : [void* valor]
     retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
-	__cargar_int_al_super_paquete(un_paquete, tipo_dato);
-	__cargar_choclo_al_super_paquete(un_paquete, valor, tamanio);
+	t_paquete* un_paquete = crear_super_paquete(LECTURA_BLOQUE_CPU_MEMORIA);
+	cargar_int_al_super_paquete(un_paquete, tipo_dato);
+	cargar_choclo_al_super_paquete(un_paquete, valor, tamanio);
     enviar_paquete(un_paquete, fd_cpu);
     eliminar_paquete(un_paquete);
 
@@ -256,8 +256,8 @@ void enviar_valor_por_lectura(void* valor, tipo_dato_parametro tipo_dato, size_t
 void enviar_respuesta_por_escritura(){
 	//M -> CPU : [char* OK]
 	retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(ESCRITURA_BLOQUE_CPU_MEMORIA);
-	__cargar_string_al_super_paquete(un_paquete, "SE ESCRIBIO EN LA MEMORIA");
+	t_paquete* un_paquete = crear_super_paquete(ESCRITURA_BLOQUE_CPU_MEMORIA);
+	cargar_string_al_super_paquete(un_paquete, "SE ESCRIBIO EN LA MEMORIA");
 	enviar_paquete(un_paquete, fd_cpu);
 	eliminar_paquete(un_paquete);
 }
@@ -265,16 +265,16 @@ void enviar_respuesta_por_escritura(){
 void enviar_respuesta_por_resize(){
 	//M -> CPU : [char* OK]
 	retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(RESIZE_CPU_MEMORIA);
-	__cargar_string_al_super_paquete(un_paquete, "OK");
+	t_paquete* un_paquete = crear_super_paquete(RESIZE_CPU_MEMORIA);
+	cargar_string_al_super_paquete(un_paquete, "OK");
 	enviar_paquete(un_paquete, fd_cpu);
 	eliminar_paquete(un_paquete);
 }
 
 void enviar_OUT_OF_MEMORY(){
 	retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(RESIZE_CPU_MEMORIA);
-	__cargar_string_al_super_paquete(un_paquete, "OUT OF MEMORY");
+	t_paquete* un_paquete = crear_super_paquete(RESIZE_CPU_MEMORIA);
+	cargar_string_al_super_paquete(un_paquete, "OUT OF MEMORY");
 	enviar_paquete(un_paquete, fd_cpu);
 	eliminar_paquete(un_paquete);
 }

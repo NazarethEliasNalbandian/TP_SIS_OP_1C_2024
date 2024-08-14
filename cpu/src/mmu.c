@@ -10,9 +10,9 @@ int MMU(uint32_t dir_logica)
 
     if (CANT_ENTRADAS_TLB == 0)
     {
-        paquete = __crear_super_paquete(CONSULTA_DE_PAGINA_CPU_MEMORIA);
-        __cargar_int_al_super_paquete(paquete, un_contexto->pID);
-        __cargar_int_al_super_paquete(paquete, num_pagina);
+        paquete = crear_super_paquete(CONSULTA_DE_PAGINA_CPU_MEMORIA);
+        cargar_int_al_super_paquete(paquete, un_contexto->pID);
+        cargar_int_al_super_paquete(paquete, num_pagina);
         enviar_paquete(paquete, fd_memoria);
         eliminar_paquete(paquete);
         sem_wait(&sem_sol_marco);
@@ -34,9 +34,9 @@ int MMU(uint32_t dir_logica)
     }
     else // TLB MISS
     {
-        paquete = __crear_super_paquete(CONSULTA_DE_PAGINA_CPU_MEMORIA);
-        __cargar_int_al_super_paquete(paquete, un_contexto->pID);
-        __cargar_int_al_super_paquete(paquete, num_pagina);
+        paquete = crear_super_paquete(CONSULTA_DE_PAGINA_CPU_MEMORIA);
+        cargar_int_al_super_paquete(paquete, un_contexto->pID);
+        cargar_int_al_super_paquete(paquete, num_pagina);
         enviar_paquete(paquete, fd_memoria);
         eliminar_paquete(paquete);
         sem_wait(&sem_sol_marco);

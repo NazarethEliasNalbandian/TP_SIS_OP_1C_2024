@@ -7,14 +7,14 @@ int main(int argc, char* argv[]) {
 
     inicializar_cpu(archivo_config);
     // cpu servidor espera conexion kernel d e i
-    fd_cpu_dispatch =_iniciar_servidor(PUERTO_ESCUCHA_DISPATCH, cpu_log_debug, "CPU DISPATCH");
-    fd_cpu_interrupt = _iniciar_servidor(PUERTO_ESCUCHA_INTERRUPT, cpu_log_debug, "CPU INTERRUPT");
+    fd_cpu_dispatch =iniciar_servidor(PUERTO_ESCUCHA_DISPATCH, cpu_log_debug, "CPU DISPATCH");
+    fd_cpu_interrupt = iniciar_servidor(PUERTO_ESCUCHA_INTERRUPT, cpu_log_debug, "CPU INTERRUPT");
     //  cpu cliente se conecta a memoria y envia handshake
-    fd_memoria = _crear_conexion(IP_MEMORIA,PUERTO_MEMORIA);
+    fd_memoria = crear_conexion(IP_MEMORIA,PUERTO_MEMORIA);
     log_info(cpu_log_debug,"MEMORIA");
     //  cpu servidor acepta kernel d e i
-    fd_kernel_dispatch = _esperar_cliente(fd_cpu_dispatch, cpu_log_debug, "KERNEL DISPATCH");
-    fd_kernel_interrupt = _esperar_cliente(fd_cpu_interrupt, cpu_log_debug, "KERNEL INTERRUPT");
+    fd_kernel_dispatch = esperar_cliente(fd_cpu_dispatch, cpu_log_debug, "KERNEL DISPATCH");
+    fd_kernel_interrupt = esperar_cliente(fd_cpu_interrupt, cpu_log_debug, "KERNEL INTERRUPT");
 
     //  cpu servidor se comunica kernel d e i
     pthread_t hilo_kernel_dispatch, hilo_kernel_interrupt, hilo_memoria;

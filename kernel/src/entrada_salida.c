@@ -320,11 +320,6 @@ void mandar_pcb_a_entrada_salida(t_instancia_io* instancia, t_pcb_con_mochila* p
 			    pcb_con_mochila = NULL;
 		    }
 
-            if(nombre_archivo != NULL){
-
-                free(nombre_archivo);
-                nombre_archivo = NULL;
-            }
             break;
         case IO_FS_DELETE:
             nombre_archivo = (char*) queue_pop(mochila->parametros);
@@ -333,11 +328,6 @@ void mandar_pcb_a_entrada_salida(t_instancia_io* instancia, t_pcb_con_mochila* p
 			    destruir_pcb_con_mochila(pcb_con_mochila);
 			    pcb_con_mochila = NULL;
 		    }
-            if(nombre_archivo != NULL){
-
-                free(nombre_archivo);
-                nombre_archivo = NULL;
-            }
             break;
         case IO_FS_TRUNCATE:
             nombre_archivo = (char*) queue_pop(mochila->parametros);
@@ -345,11 +335,6 @@ void mandar_pcb_a_entrada_salida(t_instancia_io* instancia, t_pcb_con_mochila* p
             puntero_tamanio3 = (size_t*) queue_pop(mochila->parametros);
 		    tamanio3 = *puntero_tamanio3;
             
-			if(puntero_tamanio3 != NULL){
-
-			    free(puntero_tamanio3);
-                puntero_tamanio3 = NULL;
-            }
 
             enviar_pcb_entradasalida_io_fs_truncate(pcb->pid, nombre_archivo, tamanio3, instancia->socket);
             if(pcb_con_mochila != NULL){
@@ -357,11 +342,6 @@ void mandar_pcb_a_entrada_salida(t_instancia_io* instancia, t_pcb_con_mochila* p
 			    pcb_con_mochila = NULL;
 		    }
 
-            if(nombre_archivo != NULL){
-
-                free(nombre_archivo);
-                nombre_archivo = NULL;
-            }
             break;
         case IO_FS_WRITE:
             nombre_archivo = (char*) queue_pop(mochila->parametros);
@@ -369,29 +349,12 @@ void mandar_pcb_a_entrada_salida(t_instancia_io* instancia, t_pcb_con_mochila* p
             puntero_puntero_archivo1 = (int*) queue_pop(mochila->parametros);
 		    puntero_archivo = *puntero_puntero_archivo1;
 
-            if(puntero_puntero_archivo1 != NULL){
-
-			    free(puntero_puntero_archivo1);
-                puntero_puntero_archivo1 = NULL;
-            }
-
             puntero_tamanio4 = (size_t*) queue_pop(mochila->parametros);
 			tamanio4 = *puntero_tamanio4;
             
-			if(puntero_tamanio4 != NULL){
-
-			    free(puntero_tamanio4);
-                puntero_tamanio4 = NULL;
-            }
 
             puntero_direccion_fisica3 = (int*) queue_pop(mochila->parametros);
 			direccion_fisica = *puntero_direccion_fisica3;
-
-			if(puntero_direccion_fisica3 != NULL){
-
-			    free(puntero_direccion_fisica3);
-                puntero_direccion_fisica3 = NULL;
-            }
 
 
             enviar_pcb_entradasalida_io_fs_write(pcb->pid, tamanio4, direccion_fisica, instancia->socket, nombre_archivo, puntero_archivo);
@@ -400,49 +363,24 @@ void mandar_pcb_a_entrada_salida(t_instancia_io* instancia, t_pcb_con_mochila* p
 			    pcb_con_mochila = NULL;
 		    }
 
-            if(nombre_archivo != NULL){
-
-                free(nombre_archivo);
-                nombre_archivo = NULL;
-            }
             break;
         case IO_FS_READ:
             nombre_archivo = (char*) queue_pop(mochila->parametros);
 
             puntero_tamanio5 = (size_t*) queue_pop(mochila->parametros);
 			tamanio5 = *puntero_tamanio5;
-			if(puntero_tamanio5 != NULL){
-
-			    free(puntero_tamanio5);
-                puntero_tamanio5 = NULL;
-            }
 
             puntero_direccion_fisica4 = (int*) queue_pop(mochila->parametros);
 			direccion_fisica = *puntero_direccion_fisica4;
-			if(puntero_direccion_fisica4 != NULL){
-
-			    free(puntero_direccion_fisica4);
-                puntero_direccion_fisica4 = NULL;
-            }
 
             puntero_puntero_archivo2 = (int*) queue_pop(mochila->parametros);
 			puntero_archivo = *puntero_puntero_archivo2;
-			if(puntero_puntero_archivo2 != NULL){
-
-			    free(puntero_puntero_archivo2);
-                puntero_puntero_archivo2 = NULL;
-            }
 
             enviar_pcb_entradasalida_io_fs_read(pcb->pid, tamanio5, puntero_archivo, direccion_fisica, instancia->socket, nombre_archivo);
             if(pcb_con_mochila != NULL){
 			    destruir_pcb_con_mochila(pcb_con_mochila);
 			    pcb_con_mochila = NULL;
 		    }
-            if(nombre_archivo != NULL){
-
-                free(nombre_archivo);
-                nombre_archivo = NULL;
-            }
             break;
         default:
             log_info(kernel_log_debug, "OPERACION DE ENTRADA SALIDA NO RECONOCIDA");

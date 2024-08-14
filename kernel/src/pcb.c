@@ -110,9 +110,9 @@ void imprimir_pcb(t_pcb* un_pcb){
 
 void _enviar_pcb_CPU_dispatch(t_pcb* un_pcb){
 
-    t_paquete* un_paquete = __crear_super_paquete(EJECUTAR_PROCESO_KC);
-	__cargar_int_al_super_paquete(un_paquete, un_pcb->pid);
-	__cargar_int_al_super_paquete(un_paquete, un_pcb->verificador);
+    t_paquete* un_paquete = crear_super_paquete(EJECUTAR_PROCESO_KC);
+	cargar_int_al_super_paquete(un_paquete, un_pcb->pid);
+	cargar_int_al_super_paquete(un_paquete, un_pcb->verificador);
 	agregar_registros_a_paquete(un_paquete, un_pcb->registros_CPU);
     enviar_paquete(un_paquete, fd_cpu_dispatch);
     eliminar_paquete(un_paquete);
@@ -326,8 +326,8 @@ t_pcb* buscar_y_remover_pcb_por_pid(int un_pid){
 
 void avisar_a_memoria_para_liberar_estructuras(t_pcb* un_pcb){
 
-	t_paquete* un_paquete = __crear_super_paquete(ESTRUCTURA_LIBERADA_KERNEL_MEMORIA);
-	__cargar_int_al_super_paquete(un_paquete, un_pcb->pid);
+	t_paquete* un_paquete = crear_super_paquete(ESTRUCTURA_LIBERADA_KERNEL_MEMORIA);
+	cargar_int_al_super_paquete(un_paquete, un_pcb->pid);
 	enviar_paquete(un_paquete, fd_memoria);
 	eliminar_paquete(un_paquete);
 	log_info(kernel_log_debug, "Mensaje a MEMORIA: ESTRUCTURA_LIBERADA_KERNEL_MEMORIA [PID: %d]", un_pcb->pid);

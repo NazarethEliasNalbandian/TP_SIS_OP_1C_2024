@@ -162,16 +162,16 @@ void atender_proceso_kernel(t_buffer* unBuffer){
     pthread_mutex_lock(&mutex_interruptFlag);
     if(!flag_exit && interrupt_flag){
         log_info(cpu_log_debug, "ENTRE A INTERRUPT_FLAG");
-		un_paquete = __crear_super_paquete(ATENDER_DESALOJO_PROCESO_CPU);
+		un_paquete = crear_super_paquete(ATENDER_DESALOJO_PROCESO_CPU);
         agregar_contexto_a_paquete(un_paquete);
-        __cargar_string_al_super_paquete(un_paquete, interrupt_motivo);
+        cargar_string_al_super_paquete(un_paquete, interrupt_motivo);
         enviar_paquete(un_paquete, fd_kernel_dispatch);
         eliminar_paquete(un_paquete);
 	}
     if(desalojar){
         // ENTRA ACA EN CASO DE ERRORES O EXIT
         log_info(cpu_log_debug, "ENTRE A DESALOJAR_FLAG");
-        un_paquete = __crear_super_paquete(tipo_desalojo);
+        un_paquete = crear_super_paquete(tipo_desalojo);
         agregar_contexto_a_paquete(un_paquete);
         enviar_paquete(un_paquete, fd_kernel_dispatch);
         eliminar_paquete(un_paquete);
@@ -208,13 +208,13 @@ void atender_cpu_kernel_dispatch()
                 recibir_mensaje(fd_kernel_dispatch, cpu_log_debug);
                 break;
             case EJECUTAR_PROCESO_KC:
-                unBuffer = __recibiendo_super_paquete(fd_kernel_dispatch);
+                unBuffer = recibir_paquete(fd_kernel_dispatch);
 
                 ejecutar_en_un_hilo_nuevo_detach((void*)atender_proceso_kernel, (void*)  unBuffer);
                 break;
             case ATENDER_RTA_KERNEL:
-                unBuffer = __recibiendo_super_paquete(fd_kernel_dispatch);
-                rta_kernel = __recibir_string_del_buffer(unBuffer);
+                unBuffer = recibir_paquete(fd_kernel_dispatch);
+                rta_kernel = recibir_string_del_buffer(unBuffer);
                 destruir_buffer(unBuffer);
 
                 log_info(cpu_log_debug, "RECIBI RESPUESTA DE KERNEL %s", rta_kernel);

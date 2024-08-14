@@ -12,18 +12,18 @@ int main(int argc, char* argv[]) {
     inicializar_kernel(archivo_config);
 
     // EL KERNEL SE INICIA COMO SERVIDOR
-    fd_kernel = _iniciar_servidor(PUERTO_ESCUCHA, kernel_log_debug, "KERNEL");
+    fd_kernel = iniciar_servidor(PUERTO_ESCUCHA, kernel_log_debug, "KERNEL");
 
     // EL KERNEL SE CONECTA A MEMORIA
-    if ((fd_memoria = _crear_conexion(IP_MEMORIA, PUERTO_MEMORIA)))
+    if ((fd_memoria = crear_conexion(IP_MEMORIA, PUERTO_MEMORIA)))
         log_info(kernel_log_debug, "CONEXION CON MEMORIA");
 
     // EL KERNEL SE CONECTA A CPU DISPATCH
-    if ((fd_cpu_dispatch = _crear_conexion(IP_CPU, PUERTO_CPU_DISPATCH)))
+    if ((fd_cpu_dispatch = crear_conexion(IP_CPU, PUERTO_CPU_DISPATCH)))
         log_info(kernel_log_debug, "CONEXION CON CPU DISPATCH");
 
     // EL KERNEL SE CONECTA A CPU INTERRUPT
-    if ((fd_cpu_interrupt = _crear_conexion(IP_CPU, PUERTO_CPU_INTERRUPT)))
+    if ((fd_cpu_interrupt = crear_conexion(IP_CPU, PUERTO_CPU_INTERRUPT)))
         log_info(kernel_log_debug, "CONEXION CON CPU INTERRUPT");
 
     pthread_attr_t attr;
@@ -149,7 +149,7 @@ void escuchar_ES(){
 
 int server_escucha_entrada_salida(){
 	log_info(kernel_log_debug, "ESCUCHANDO ENTRADA SALIDA");
-	int fd_entradasalida = _esperar_cliente(fd_kernel, kernel_log_debug, "ENTRADA SALIDA");
+	int fd_entradasalida = esperar_cliente(fd_kernel, kernel_log_debug, "ENTRADA SALIDA");
 
     if(fd_entradasalida != -1){
 
@@ -172,8 +172,8 @@ int server_escucha_entrada_salida(){
 }
 
 void enviar_peticion_nombre_y_tipo(int copia_socket) {
-    t_paquete * paquete = __crear_super_paquete(NOMBRE_ENTRADA_SALIDA);
-    __cargar_string_al_super_paquete(paquete, "PETICION NOMBRE Y TIPO");
+    t_paquete * paquete = crear_super_paquete(NOMBRE_ENTRADA_SALIDA);
+    cargar_string_al_super_paquete(paquete, "PETICION NOMBRE Y TIPO");
     enviar_paquete(paquete, copia_socket);
     eliminar_paquete(paquete);
 }

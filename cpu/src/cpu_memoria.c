@@ -14,13 +14,13 @@ void atender_cpu_memoria(){
 			destruir_buffer(unBuffer);
 			break;
 		case PETICION_INFO_CPU_MEMORIA:
-			unBuffer = __recibiendo_super_paquete(fd_memoria);
-			TAM_PAGINA = __recibir_int_del_buffer(unBuffer);
+			unBuffer = recibir_paquete(fd_memoria);
+			TAM_PAGINA = recibir_int_del_buffer(unBuffer);
 			destruir_buffer(unBuffer);
 			break;
 		case PETICION_DE_INSTRUCCIONES_CPU_MEMORIA:
-			unBuffer = __recibiendo_super_paquete(fd_memoria);
-			char* instruccion_actual_string = __recibir_string_del_buffer(unBuffer); 
+			unBuffer = recibir_paquete(fd_memoria);
+			char* instruccion_actual_string = recibir_string_del_buffer(unBuffer); 
 			pthread_mutex_lock(&mutex_instruccion_split);
 
 			if(instruccion_split != NULL){
@@ -39,16 +39,16 @@ void atender_cpu_memoria(){
 			}
 			break;
 		case RESIZE_CPU_MEMORIA:
-			unBuffer = __recibiendo_super_paquete(fd_memoria);
-			rta_m_resize = __recibir_string_del_buffer(unBuffer);
+			unBuffer = recibir_paquete(fd_memoria);
+			rta_m_resize = recibir_string_del_buffer(unBuffer);
 			destruir_buffer(unBuffer);
 			sem_post(&sem_resize);
 			break;
 		case CONSULTA_DE_PAGINA_CPU_MEMORIA:
-			unBuffer = __recibiendo_super_paquete(fd_memoria);
+			unBuffer = recibir_paquete(fd_memoria);
 
 			sem_wait(&sem_nro_marco);
-			nro_marco = __recibir_int_del_buffer(unBuffer);
+			nro_marco = recibir_int_del_buffer(unBuffer);
 			destruir_buffer(unBuffer);
 			sem_post(&sem_sol_marco);
 			break;
@@ -57,29 +57,29 @@ void atender_cpu_memoria(){
 			// 	free(valor_leido_string);
 			// 	valor_leido_string = NULL;
 			// }
-			unBuffer = __recibiendo_super_paquete(fd_memoria);
-			tipo_dato = __recibir_int_del_buffer(unBuffer);
+			unBuffer = recibir_paquete(fd_memoria);
+			tipo_dato = recibir_int_del_buffer(unBuffer);
 
 			if(tipo_dato == T_UINT32){
-				valor_leido_uint32 = extraer_uint32_del_buffer(unBuffer);
+				valor_leido_uint32 = recibir_uint32_del_buffer(unBuffer);
 			} else if(tipo_dato == T_UINT8)
 			{
-				valor_leido_uint8 = extraer_uint8_del_buffer(unBuffer);
+				valor_leido_uint8 = recibir_uint8_del_buffer(unBuffer);
 			} else if(tipo_dato == T_STRING){
-				valor_leido_string = (char*) __recibir_choclo_del_buffer(unBuffer);
+				valor_leido_string = (char*) recibir_choclo_del_buffer(unBuffer);
 			}
 			destruir_buffer(unBuffer);
 			sem_post(&sem_val_leido);
 			break;
 		case ESCRITURA_BLOQUE_CPU_MEMORIA:
-			unBuffer = __recibiendo_super_paquete(fd_memoria);
+			unBuffer = recibir_paquete(fd_memoria);
 			if(valor_escrito != NULL)
 			{
 				free(valor_escrito);
 				valor_escrito = NULL;
 			}
 
-			valor_escrito = __recibir_string_del_buffer(unBuffer);
+			valor_escrito = recibir_string_del_buffer(unBuffer);
 			destruir_buffer(unBuffer);
 			sem_post(&sem_val_escrito);
 			// free(valor_escrito);

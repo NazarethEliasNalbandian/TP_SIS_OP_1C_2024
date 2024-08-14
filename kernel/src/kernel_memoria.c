@@ -7,12 +7,12 @@ void atender_kernel_memoria(){
 		t_buffer* unBuffer = NULL;
 		switch (cod_op) {
 			case ESTRUCTURA_INICIADA_KERNEL_MEMORIA:
-				unBuffer = __recibiendo_super_paquete(fd_memoria);
+				unBuffer = recibir_paquete(fd_memoria);
 				recibir_confirmacion_de_memoria(unBuffer);
 				sem_post(&sem_estructura_iniciada);
 				break;
 			case ESTRUCTURA_LIBERADA_KERNEL_MEMORIA:
-				unBuffer = __recibiendo_super_paquete(fd_memoria);
+				unBuffer = recibir_paquete(fd_memoria);
 				recibir_confirmacion_de_memoria(unBuffer);
 				sem_post(&sem_estructura_liberada);
 				break;
@@ -28,7 +28,7 @@ void atender_kernel_memoria(){
 }
 
 void recibir_confirmacion_de_memoria(t_buffer* unBuffer){
-	char* recibir_mensaje = __recibir_string_del_buffer(unBuffer);
+	char* recibir_mensaje = recibir_string_del_buffer(unBuffer);
 	destruir_buffer(unBuffer);
 	printf("MENSAJE DE MEMORIA: %s\n", recibir_mensaje);
 

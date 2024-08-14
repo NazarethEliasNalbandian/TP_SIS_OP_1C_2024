@@ -12,12 +12,12 @@ void _gestionar_interrupt_consola(){
 		t_pcb* pcb_execute = list_get(lista_execute, 0);
 		pthread_mutex_unlock(&mutex_lista_exec);
 
-		t_paquete* un_paquete = __crear_super_paquete(FORZAR_DESALOJO_CPU_KERNEL);
-		__cargar_int_al_super_paquete(un_paquete, pcb_execute->pid);
-		__cargar_int_al_super_paquete(un_paquete, pcb_execute->verificador);
+		t_paquete* un_paquete = crear_super_paquete(FORZAR_DESALOJO_CPU_KERNEL);
+		cargar_int_al_super_paquete(un_paquete, pcb_execute->pid);
+		cargar_int_al_super_paquete(un_paquete, pcb_execute->verificador);
 
 		if(pcb_execute->flag_finalizar_proceso){
-			__cargar_string_al_super_paquete(un_paquete, "DESALOJO_POR_CONSOLA");
+			cargar_string_al_super_paquete(un_paquete, "DESALOJO_POR_CONSOLA");
 			enviar_paquete(un_paquete, fd_cpu_interrupt);
 			eliminar_paquete(un_paquete);
 			log_info(kernel_log_debug, "Send -> CPU: FORZAR_DESALOJO_KC <PID: %d>[T:%d]", pcb_execute->pid, pcb_execute->verificador);
@@ -35,18 +35,18 @@ void _gestionar_interrupt_quantum(){
 		t_pcb* pcb_execute = list_get(lista_execute, 0);
 		pthread_mutex_unlock(&mutex_lista_exec);
 
-		t_paquete* un_paquete = __crear_super_paquete(FORZAR_DESALOJO_CPU_KERNEL);
-		__cargar_int_al_super_paquete(un_paquete, pcb_execute->pid);
-		__cargar_int_al_super_paquete(un_paquete, pcb_execute->verificador);
+		t_paquete* un_paquete = crear_super_paquete(FORZAR_DESALOJO_CPU_KERNEL);
+		cargar_int_al_super_paquete(un_paquete, pcb_execute->pid);
+		cargar_int_al_super_paquete(un_paquete, pcb_execute->verificador);
 
 		if(pcb_execute->flag_finalizar_proceso){
-			__cargar_string_al_super_paquete(un_paquete, "DESALOJO_POR_CONSOLA");
+			cargar_string_al_super_paquete(un_paquete, "DESALOJO_POR_CONSOLA");
 			enviar_paquete(un_paquete, fd_cpu_interrupt);
 			eliminar_paquete(un_paquete);
 			log_info(kernel_log_debug, "Send -> CPU: FORZAR_DESALOJO_KC <PID: %d>[T:%d]", pcb_execute->pid, pcb_execute->verificador);
 		}
 		else{
-			__cargar_string_al_super_paquete(un_paquete, "FIN_QUANTUM");
+			cargar_string_al_super_paquete(un_paquete, "FIN_QUANTUM");
 			enviar_paquete(un_paquete, fd_cpu_interrupt);
 			eliminar_paquete(un_paquete);
 		}
@@ -61,18 +61,18 @@ void _gestionar_interrupt_prioridad(){
 		t_pcb* pcb_execute = list_get(lista_execute, 0);
 		pthread_mutex_unlock(&mutex_lista_exec);
 
-		t_paquete* un_paquete = __crear_super_paquete(FORZAR_DESALOJO_CPU_KERNEL);
-		__cargar_int_al_super_paquete(un_paquete, pcb_execute->pid);
-		__cargar_int_al_super_paquete(un_paquete, pcb_execute->verificador);
+		t_paquete* un_paquete = crear_super_paquete(FORZAR_DESALOJO_CPU_KERNEL);
+		cargar_int_al_super_paquete(un_paquete, pcb_execute->pid);
+		cargar_int_al_super_paquete(un_paquete, pcb_execute->verificador);
 
 		if(pcb_execute->flag_finalizar_proceso){
-			__cargar_string_al_super_paquete(un_paquete, "DESALOJO_POR_CONSOLA");
+			cargar_string_al_super_paquete(un_paquete, "DESALOJO_POR_CONSOLA");
 			enviar_paquete(un_paquete, fd_cpu_interrupt);
 			eliminar_paquete(un_paquete);
 			log_info(kernel_log_debug, "Send -> CPU: FORZAR_DESALOJO_KC <PID: %d>[T:%d]", pcb_execute->pid, pcb_execute->verificador);
 		}
 		else{
-			__cargar_string_al_super_paquete(un_paquete, "PRIORIDAD");
+			cargar_string_al_super_paquete(un_paquete, "PRIORIDAD");
 			enviar_paquete(un_paquete, fd_cpu_interrupt);
 			eliminar_paquete(un_paquete);
 

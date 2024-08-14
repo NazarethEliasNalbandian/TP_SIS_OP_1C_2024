@@ -195,77 +195,59 @@ typedef struct
 	t_buffer* buffer;
 } t_paquete;
 
-t_log* iniciar_logger(char*,char*,bool,t_log_level);
-t_config* iniciar_config(char*);
-void leer_consola(t_log*);
-void terminar_programa(int, t_log*, t_config*);
-
-void* recibir_buffer(int*, int);
-
-int iniciar_servidor(char*);
-int esperar_cliente(int);
-void recibir_mensaje(int,t_log*);
-int recibir_operacion(int);
-
-int crear_conexion(char*,char*);
-void enviar_mensaje(char*, int);
-t_paquete* crear_paquete(int cod_op);
-void agregar_a_paquete(t_paquete*, void*, int);
-void enviar_paquete(t_paquete*, int);
-void liberar_conexion(int);
-void eliminar_paquete(t_paquete*);
-
-void iterator(char*, t_log*);
-
-
-
-t_buffer* _crear_buffer();
-int _crear_conexion(char *ip, char* puerto);
-int _iniciar_servidor(char * puerto, t_log* un_log, char * msj_server);
-int _esperar_cliente(int socket_servidor, t_log* un_log, char* msj);
+// SOCKETS 
+int crear_conexion(char *ip, char* puerto);
+int iniciar_servidor(char * puerto, t_log* un_log, char * msj_server);
+int esperar_cliente(int socket_servidor, t_log* un_log, char* msj);
 int recibir_operacion(int socket_cliente);
-void* extraer_generico_del_buffer(t_buffer* un_buffer);
-uint8_t extraer_uint8_del_buffer(t_buffer* un_buffer);
-uint32_t extraer_uint32_del_buffer(t_buffer* un_buffer);
-size_t extraer_size_t_del_buffer(t_buffer* un_buffer);
-char extraer_char_del_buffer(t_buffer* un_buffer);
-void eliminar_paquete(t_paquete* un_paquete);
-void ejecutar_en_un_hilo_nuevo_detach(void (*f)(void*) ,void* struct_arg);
-void ejecutar_en_un_hilo_nuevo_join(void (*f)(void*) ,void* struct_arg);
 void liberar_conexion(int socket_cliente);
-int convertirInterfazAEnum(const char* tipo_entradasalida);
-void destruir_buffer(t_buffer* buffer);
-t_list* leer_archivo_y_cargar_instrucciones(const char* path_archivo);
 
 
-void* __recibir_buffer(int* size, int socket_cliente);
-int* __recibir_int(t_log* logger, void* coso);
-void __crear_buffer(t_paquete* paquete);
-t_list* __recibir_paquete(int);
-t_list* __recibir_paquete_int(int socket_cliente);
-t_paquete* __crear_paquete(void);
-void __agregar_a_paquete(t_paquete* paquete, void* valor, int tamanio);
-void* __serializar_paquete(t_paquete* paquete, int bytes);
-void __eliminar_paquete(t_paquete* paquete);
-t_paquete* __crear_super_paquete(op_code code_op);
-void __cargar_int_al_super_paquete(t_paquete* paquete, int numero);
-void __cargar_string_al_super_paquete(t_paquete* paquete, char* string);
-void __cargar_choclo_al_super_paquete(t_paquete* paquete, void* choclo, int size);
-int __recibir_int_del_buffer(t_buffer* coso);
-char* __recibir_string_del_buffer(t_buffer* coso);
-void* __recibir_choclo_del_buffer(t_buffer* coso);
-void __cargar_uint8_al_super_paquete(t_paquete* un_paquete, uint8_t uint8_value);
-void __cargar_uint32_al_super_paquete(t_paquete* un_paquete, uint32_t uint32_value);
-void __cargar_size_t_al_super_paquete(t_paquete* un_paquete, size_t size_t_value);
-void __cargar_char_al_super_paquete(t_paquete* paquete, char caracter);
-t_buffer* __recibiendo_super_paquete(int conexion);
-void recibir_contexto(t_buffer * unBuffer, t_contexto* contextoRecibido);
-void recibir_mochila(t_buffer * unBuffer, t_mochila* mochilaRecibida, t_log* logger);
+// SERIALIZACION
+t_paquete* crear_super_paquete(op_code code_op);
+void enviar_paquete(t_paquete*, int);
+void eliminar_paquete(t_paquete* un_paquete);
+void crear_buffer(t_paquete* paquete);
+void* serializar_paquete(t_paquete* paquete, int bytes);
+
+// CARGAS
+void cargar_int_al_super_paquete(t_paquete* paquete, int numero);
+void cargar_string_al_super_paquete(t_paquete* paquete, char* string);
+void cargar_choclo_al_super_paquete(t_paquete* paquete, void* choclo, int size);
+void cargar_uint8_al_super_paquete(t_paquete* un_paquete, uint8_t uint8_value);
+void cargar_uint32_al_super_paquete(t_paquete* un_paquete, uint32_t uint32_value);
+void cargar_size_t_al_super_paquete(t_paquete* un_paquete, size_t size_t_value);
+void cargar_char_al_super_paquete(t_paquete* paquete, char caracter);
+
 void agregar_registros_a_paquete(t_paquete * un_paquete, t_registrosCPU* registroRecibido);
-char** dividir_palabra_en_fragmentos(char* palabra, int N);
+
+// EXTRACCIÓN
+t_buffer* recibir_paquete(int conexion);
+void* recibir_buffer(int* size, int socket_cliente);
+int recibir_int_del_buffer(t_buffer* coso);
+char* recibir_string_del_buffer(t_buffer* coso);
+void* recibir_choclo_del_buffer(t_buffer* coso);
+void* recibir_generico_del_buffer(t_buffer* un_buffer);
+uint8_t recibir_uint8_del_buffer(t_buffer* un_buffer);
+uint32_t recibir_uint32_del_buffer(t_buffer* un_buffer);
+size_t recibir_size_t_del_buffer(t_buffer* un_buffer);
+char recibir_char_del_buffer(t_buffer* un_buffer);
+void recibir_mensaje(int,t_log*);
+
+void recibir_mochila(t_buffer * unBuffer, t_mochila* mochilaRecibida, t_log* logger);
+void recibir_contexto(t_buffer * unBuffer, t_contexto* contextoRecibido);
 void recibir_registros(t_buffer* unBuffer, t_contexto* contextoRecibido);
-void destruir_contexto_por_param(t_contexto* contexto);
+
+// SERVICIOS
 void limpiar_buffer_entrada();
 void safe_free(void* elemento);
+void ejecutar_en_un_hilo_nuevo_detach(void (*f)(void*) ,void* struct_arg);
+void ejecutar_en_un_hilo_nuevo_join(void (*f)(void*) ,void* struct_arg);
+int convertirInterfazAEnum(const char* tipo_entradasalida);
+t_list* leer_archivo_y_cargar_instrucciones(const char* path_archivo);
+
+// DESTRUCCIÓN
+void destruir_contexto_por_param(t_contexto* contexto);
+void destruir_buffer(t_buffer* buffer);
 
 #endif

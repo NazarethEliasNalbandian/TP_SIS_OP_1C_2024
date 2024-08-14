@@ -24,12 +24,12 @@ void atender_kernel_entradasalida(void* arg){
 		switch (cod_op) {
 			case NOMBRE_ENTRADA_SALIDA:
 				instancia = malloc(sizeof(t_instancia_io));
-				unBuffer = __recibiendo_super_paquete(socket);
+				unBuffer = recibir_paquete(socket);
 				asignar_nombre_y_tipo_y_agregar_a_listas(unBuffer, instancia, socket);
 				break;
 
 			case FIN_ENTRADASALIDA:
-				unBuffer = __recibiendo_super_paquete(socket);
+				unBuffer = recibir_paquete(socket);
 				instancia = obtener_instancia_por_socket(socket);
 				atender_fin_entradasalida(unBuffer, instancia);
 				break;
@@ -57,8 +57,8 @@ void asignar_nombre_y_tipo_y_agregar_a_listas(t_buffer* unBuffer, t_instancia_io
 	nueva_instancia->pcb_con_interfaz_asignada = NULL;
 
 	pthread_mutex_init(&(nueva_instancia->mutex_espera),NULL);
-    char* nombre_entradasalida = __recibir_string_del_buffer(unBuffer);
-    int tipo_io = __recibir_int_del_buffer(unBuffer);
+    char* nombre_entradasalida = recibir_string_del_buffer(unBuffer);
+    int tipo_io = recibir_int_del_buffer(unBuffer);
 	destruir_buffer(unBuffer);
 
 	nueva_instancia->nombre = strdup(nombre_entradasalida);
@@ -78,8 +78,8 @@ void asignar_nombre_y_tipo_y_agregar_a_listas(t_buffer* unBuffer, t_instancia_io
 }
 
 void atender_fin_entradasalida(t_buffer* unBuffer, t_instancia_io* instancia){
-	int pid = __recibir_int_del_buffer(unBuffer);
-	char* resultado = __recibir_string_del_buffer(unBuffer);
+	int pid = recibir_int_del_buffer(unBuffer);
+	char* resultado = recibir_string_del_buffer(unBuffer);
 	destruir_buffer(unBuffer);
 
 	pausador();

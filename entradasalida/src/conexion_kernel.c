@@ -13,39 +13,39 @@ void atender_entradasalida_kernel() {
         t_buffer* unBuffer = NULL;
         switch (cod_op) {
             case NOMBRE_ENTRADA_SALIDA:
-                unBuffer = __recibiendo_super_paquete(fd_kernel);
+                unBuffer = recibir_paquete(fd_kernel);
                 enviar_nombre_a_kernel(unBuffer);
                 break;
             case PCB_SLEEP:
-                unBuffer = __recibiendo_super_paquete(fd_kernel);
+                unBuffer = recibir_paquete(fd_kernel);
                 procesar_sleep(unBuffer);
                 break;
             case PCB_STDIN:
-                unBuffer = __recibiendo_super_paquete(fd_kernel);
+                unBuffer = recibir_paquete(fd_kernel);
                 procesar_stdin(unBuffer);
                 break;
             case PCB_STDOUT:
-                unBuffer = __recibiendo_super_paquete(fd_kernel);
+                unBuffer = recibir_paquete(fd_kernel);
                 procesar_stdout(unBuffer);
                 break;
             case PCB_FS_CREATE:
-                unBuffer = __recibiendo_super_paquete(fd_kernel);
+                unBuffer = recibir_paquete(fd_kernel);
                 procesar_fs_create(unBuffer);
                 break;
             case PCB_FS_DELETE:
-                unBuffer = __recibiendo_super_paquete(fd_kernel);
+                unBuffer = recibir_paquete(fd_kernel);
                 procesar_fs_delete(unBuffer);
                 break;
             case PCB_FS_TRUNCATE:
-                unBuffer = __recibiendo_super_paquete(fd_kernel);
+                unBuffer = recibir_paquete(fd_kernel);
                 procesar_fs_truncate(unBuffer);
                 break;
             case PCB_FS_WRITE:
-                unBuffer = __recibiendo_super_paquete(fd_kernel);
+                unBuffer = recibir_paquete(fd_kernel);
                 procesar_fs_write(unBuffer);
                 break;
             case PCB_FS_READ:
-                unBuffer = __recibiendo_super_paquete(fd_kernel);
+                unBuffer = recibir_paquete(fd_kernel);
                 procesar_fs_read(unBuffer);
                 break;
             case -1:
@@ -61,8 +61,8 @@ void atender_entradasalida_kernel() {
 }
 
 void procesar_sleep(t_buffer* buffer) {
-    int pid = __recibir_int_del_buffer(buffer);
-    int tiempo_a_dormir = __recibir_int_del_buffer(buffer);
+    int pid = recibir_int_del_buffer(buffer);
+    int tiempo_a_dormir = recibir_int_del_buffer(buffer);
     destruir_buffer(buffer);
 
     log_info(io_log_obligatorio, "PID: %d - Operacion: IO_GEN_SLEEP", pid);
@@ -71,9 +71,9 @@ void procesar_sleep(t_buffer* buffer) {
 }
 
 void procesar_stdin(t_buffer* buffer) {
-    int pid = __recibir_int_del_buffer(buffer);
-    size_t tamanio = extraer_size_t_del_buffer(buffer);
-    int direccion_fisica = __recibir_int_del_buffer(buffer);
+    int pid = recibir_int_del_buffer(buffer);
+    size_t tamanio = recibir_size_t_del_buffer(buffer);
+    int direccion_fisica = recibir_int_del_buffer(buffer);
 
     log_info(io_log_debug, "TAMANIO: %ld", tamanio);
 
@@ -115,9 +115,9 @@ void procesar_stdin(t_buffer* buffer) {
 
 void procesar_stdout(t_buffer* buffer) {
     usleep(TIEMPO_UNIDAD_TRABAJO * 1000);
-    int pid = __recibir_int_del_buffer(buffer);
-    size_t tamanio = extraer_size_t_del_buffer(buffer);
-    int direccion_fisica = __recibir_int_del_buffer(buffer);
+    int pid = recibir_int_del_buffer(buffer);
+    size_t tamanio = recibir_size_t_del_buffer(buffer);
+    int direccion_fisica = recibir_int_del_buffer(buffer);
 
     destruir_buffer(buffer);
 
@@ -132,8 +132,8 @@ void procesar_stdout(t_buffer* buffer) {
 void procesar_fs_create(t_buffer* unBuffer){
 
     usleep(TIEMPO_UNIDAD_TRABAJO * 1000);
-    int pid = __recibir_int_del_buffer(unBuffer);
-    char* nombre_archivo = __recibir_string_del_buffer(unBuffer);
+    int pid = recibir_int_del_buffer(unBuffer);
+    char* nombre_archivo = recibir_string_del_buffer(unBuffer);
     destruir_buffer(unBuffer);
     log_info(io_log_obligatorio, "PID: %d - Operacion: IO_FS_CREATE", pid);
 
@@ -174,8 +174,8 @@ void procesar_fs_create(t_buffer* unBuffer){
 void procesar_fs_delete(t_buffer* unBuffer){
 
     usleep(TIEMPO_UNIDAD_TRABAJO * 1000);
-    int pid = __recibir_int_del_buffer(unBuffer);
-    char* nombre_archivo = __recibir_string_del_buffer(unBuffer);
+    int pid = recibir_int_del_buffer(unBuffer);
+    char* nombre_archivo = recibir_string_del_buffer(unBuffer);
     destruir_buffer(unBuffer);
      log_info(io_log_obligatorio, "PID: %d - Operacion: IO_FS_DELETE", pid);
 
@@ -217,9 +217,9 @@ void procesar_fs_delete(t_buffer* unBuffer){
 void procesar_fs_truncate(t_buffer* unBuffer){  
 
     usleep(TIEMPO_UNIDAD_TRABAJO * 1000);
-    int pid = __recibir_int_del_buffer(unBuffer);
-    char* nombre_archivo = __recibir_string_del_buffer(unBuffer);
-    int nuevo_tamanio = __recibir_int_del_buffer(unBuffer);
+    int pid = recibir_int_del_buffer(unBuffer);
+    char* nombre_archivo = recibir_string_del_buffer(unBuffer);
+    int nuevo_tamanio = recibir_int_del_buffer(unBuffer);
     destruir_buffer(unBuffer);
     log_info(io_log_obligatorio, "PID: %d - Operacion: IO_FS_TRUNCATE", pid);
 
@@ -350,11 +350,11 @@ void procesar_fs_truncate(t_buffer* unBuffer){
 void procesar_fs_write(t_buffer* unBuffer){
     usleep(TIEMPO_UNIDAD_TRABAJO * 1000);
 
-    int pid = __recibir_int_del_buffer(unBuffer);
-    char* nombre_archivo = __recibir_string_del_buffer(unBuffer);
-    size_t tamanio = extraer_size_t_del_buffer(unBuffer);
-    int puntero_archivo = __recibir_int_del_buffer(unBuffer);
-    int direccion_fisica = __recibir_int_del_buffer(unBuffer);
+    int pid = recibir_int_del_buffer(unBuffer);
+    char* nombre_archivo = recibir_string_del_buffer(unBuffer);
+    size_t tamanio = recibir_size_t_del_buffer(unBuffer);
+    int puntero_archivo = recibir_int_del_buffer(unBuffer);
+    int direccion_fisica = recibir_int_del_buffer(unBuffer);
     destruir_buffer(unBuffer);
     log_info(io_log_obligatorio, "PID: %d - Operacion: IO_FS_WRITE", pid);
 
@@ -405,11 +405,11 @@ void procesar_fs_write(t_buffer* unBuffer){
 void procesar_fs_read(t_buffer* unBuffer){
     usleep(TIEMPO_UNIDAD_TRABAJO * 1000);
 
-    int pid = __recibir_int_del_buffer(unBuffer);
-    char* nombre_archivo = __recibir_string_del_buffer(unBuffer);
-    size_t tamanio = extraer_size_t_del_buffer(unBuffer);
-    int puntero_archivo = __recibir_int_del_buffer(unBuffer);
-    int direccion_fisica = __recibir_int_del_buffer(unBuffer);
+    int pid = recibir_int_del_buffer(unBuffer);
+    char* nombre_archivo = recibir_string_del_buffer(unBuffer);
+    size_t tamanio = recibir_size_t_del_buffer(unBuffer);
+    int puntero_archivo = recibir_int_del_buffer(unBuffer);
+    int direccion_fisica = recibir_int_del_buffer(unBuffer);
 
     log_info(io_log_obligatorio, "PID: %d - Operacion: IO_FS_READ", pid);
 
@@ -457,14 +457,14 @@ void procesar_fs_read(t_buffer* unBuffer){
 }
 
 void enviar_nombre_a_kernel(t_buffer* unBuffer) {
-    char* mensaje = __recibir_string_del_buffer(unBuffer);
+    char* mensaje = recibir_string_del_buffer(unBuffer);
     destruir_buffer(unBuffer);
 
-    t_paquete* un_paquete = __crear_super_paquete(NOMBRE_ENTRADA_SALIDA);
+    t_paquete* un_paquete = crear_super_paquete(NOMBRE_ENTRADA_SALIDA);
     if(strcmp(mensaje, "PETICION NOMBRE Y TIPO") == 0)
      {
-        __cargar_string_al_super_paquete(un_paquete, NOMBRE_INTERFAZ);
-        __cargar_int_al_super_paquete(un_paquete, TIPO_INTERFAZ_ENUM);
+        cargar_string_al_super_paquete(un_paquete, NOMBRE_INTERFAZ);
+        cargar_int_al_super_paquete(un_paquete, TIPO_INTERFAZ_ENUM);
      }
 
     enviar_paquete(un_paquete, fd_kernel);
@@ -479,9 +479,9 @@ void enviar_nombre_a_kernel(t_buffer* unBuffer) {
 
 void enviar_fin_entradasalida_a_kernel(int pid) {
 
-    t_paquete* un_paquete = __crear_super_paquete(FIN_ENTRADASALIDA);
-    __cargar_int_al_super_paquete(un_paquete, pid);
-    __cargar_string_al_super_paquete(un_paquete, "OK");
+    t_paquete* un_paquete = crear_super_paquete(FIN_ENTRADASALIDA);
+    cargar_int_al_super_paquete(un_paquete, pid);
+    cargar_string_al_super_paquete(un_paquete, "OK");
 
     enviar_paquete(un_paquete, fd_kernel);
     eliminar_paquete(un_paquete);
@@ -491,9 +491,9 @@ void enviar_fin_entradasalida_a_kernel(int pid) {
 
 void enviar_contexto_a_kernel_con_desalojo(int pid) {
 
-    t_paquete* un_paquete = __crear_super_paquete(FIN_ENTRADASALIDA);
-    __cargar_int_al_super_paquete(un_paquete, pid);
-    __cargar_string_al_super_paquete(un_paquete, "ERROR");
+    t_paquete* un_paquete = crear_super_paquete(FIN_ENTRADASALIDA);
+    cargar_int_al_super_paquete(un_paquete, pid);
+    cargar_string_al_super_paquete(un_paquete, "ERROR");
 
     enviar_paquete(un_paquete, fd_kernel);
     eliminar_paquete(un_paquete);

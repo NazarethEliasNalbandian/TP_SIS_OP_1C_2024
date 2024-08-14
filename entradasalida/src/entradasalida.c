@@ -20,11 +20,11 @@ int main(int argc, char* argv[]) {
 
     TIPO_INTERFAZ_ENUM = convertirInterfazAEnum(TIPO_INTERFAZ);
 
-    if ((fd_kernel = _crear_conexion(IP_KERNEL, PUERTO_KERNEL))) {
+    if ((fd_kernel = crear_conexion(IP_KERNEL, PUERTO_KERNEL))) {
         log_info(io_log_debug, "Conexión con Kernel exitosa");
     }
 
-    if ((fd_memoria = _crear_conexion(IP_MEMORIA, PUERTO_MEMORIA))) {
+    if ((fd_memoria = crear_conexion(IP_MEMORIA, PUERTO_MEMORIA))) {
         log_info(io_log_debug, "Conexión con Memoria exitosa");
     }
 

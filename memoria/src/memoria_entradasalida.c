@@ -10,11 +10,11 @@ void atender_memoria_entradasalida(void * instancia){
 		int cod_op = recibir_operacion(nueva_instancia->socket);
 		switch (cod_op) {
 		case LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA: //[int pid][int dir_fisica][size_t tamanio]
-			unBuffer = __recibiendo_super_paquete(nueva_instancia->socket);
+			unBuffer = recibir_paquete(nueva_instancia->socket);
 			_leer_valor_de_dir_fisica(unBuffer, nueva_instancia->socket); 
 			break;
 		case ESCRITURA_BLOQUE_ENTRADASALIDA_MEMORIA: ////[int pid][int dir_fisica][size_t tamanio][void* info]
-			unBuffer = __recibiendo_super_paquete(nueva_instancia->socket);
+			unBuffer = recibir_paquete(nueva_instancia->socket);
 			_escribir_valor_en_dir_fisica(unBuffer, nueva_instancia->socket);
 			break;
 		case -1:
@@ -30,11 +30,11 @@ void atender_memoria_entradasalida(void * instancia){
 
 void _escribir_valor_en_dir_fisica(t_buffer* un_buffer, int socket){
 
-	int pid = __recibir_int_del_buffer(un_buffer);
-	int dir_fisica = __recibir_int_del_buffer(un_buffer);
-	size_t tamanio = extraer_size_t_del_buffer(un_buffer);
-	tipo_dato_parametro tipo_dato = __recibir_int_del_buffer(un_buffer);
-	void* valor = __recibir_choclo_del_buffer(un_buffer);
+	int pid = recibir_int_del_buffer(un_buffer);
+	int dir_fisica = recibir_int_del_buffer(un_buffer);
+	size_t tamanio = recibir_size_t_del_buffer(un_buffer);
+	tipo_dato_parametro tipo_dato = recibir_int_del_buffer(un_buffer);
+	void* valor = recibir_choclo_del_buffer(un_buffer);
 
 	destruir_buffer(un_buffer);
 
@@ -52,10 +52,10 @@ void _escribir_valor_en_dir_fisica(t_buffer* un_buffer, int socket){
 
 void _leer_valor_de_dir_fisica(t_buffer* un_buffer, int socket){
 
-	int pid = __recibir_int_del_buffer(un_buffer);
-	int dir_fisica = __recibir_int_del_buffer(un_buffer);
-	size_t tamanio = extraer_size_t_del_buffer(un_buffer);
-	tipo_dato_parametro tipo_dato = __recibir_int_del_buffer(un_buffer);
+	int pid = recibir_int_del_buffer(un_buffer);
+	int dir_fisica = recibir_int_del_buffer(un_buffer);
+	size_t tamanio = recibir_size_t_del_buffer(un_buffer);
+	tipo_dato_parametro tipo_dato = recibir_int_del_buffer(un_buffer);
 
 	if(tipo_dato == T_UINT32){
 		uint32_t valor_uint32 = leer_uint32_de_dir_fisica(pid, dir_fisica);
@@ -74,8 +74,8 @@ void _leer_valor_de_dir_fisica(t_buffer* un_buffer, int socket){
 
 void enviar_a_entradasalida_respuesta_por_pedido_de_escritura_en_memoria(int socket){
 	retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(ESCRITURA_BLOQUE_ENTRADASALIDA_MEMORIA);
-	__cargar_string_al_super_paquete(un_paquete, "SE ESCRIBIO EN LA MEMORIA");
+	t_paquete* un_paquete = crear_super_paquete(ESCRITURA_BLOQUE_ENTRADASALIDA_MEMORIA);
+	cargar_string_al_super_paquete(un_paquete, "SE ESCRIBIO EN LA MEMORIA");
 	enviar_paquete(un_paquete, socket);
 	eliminar_paquete(un_paquete);
 }
@@ -83,9 +83,9 @@ void enviar_a_entradasalida_respuesta_por_pedido_de_escritura_en_memoria(int soc
 void _enviar_uint32_por_lectura(uint32_t valor, tipo_dato_parametro tipo_dato, int socket){
     // M -> CPU : [void* valor]
     retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA);
-	__cargar_int_al_super_paquete(un_paquete, tipo_dato);
-    __cargar_uint32_al_super_paquete(un_paquete, valor);
+	t_paquete* un_paquete = crear_super_paquete(LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA);
+	cargar_int_al_super_paquete(un_paquete, tipo_dato);
+    cargar_uint32_al_super_paquete(un_paquete, valor);
     enviar_paquete(un_paquete, socket);
     eliminar_paquete(un_paquete);
 }
@@ -93,9 +93,9 @@ void _enviar_uint32_por_lectura(uint32_t valor, tipo_dato_parametro tipo_dato, i
 void _enviar_uint8_por_lectura(uint8_t valor, tipo_dato_parametro tipo_dato, int socket){
     // M -> CPU : [void* valor]
     retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA);
-	__cargar_int_al_super_paquete(un_paquete, tipo_dato);
-    __cargar_uint8_al_super_paquete(un_paquete, valor);
+	t_paquete* un_paquete = crear_super_paquete(LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA);
+	cargar_int_al_super_paquete(un_paquete, tipo_dato);
+    cargar_uint8_al_super_paquete(un_paquete, valor);
     enviar_paquete(un_paquete, socket);
     eliminar_paquete(un_paquete);
 }
@@ -103,8 +103,8 @@ void _enviar_uint8_por_lectura(uint8_t valor, tipo_dato_parametro tipo_dato, int
 void _enviar_string_por_lectura(char* valor, int socket){
     // M -> CPU : [void* valor]
     retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA);
-    __cargar_string_al_super_paquete(un_paquete, valor);
+	t_paquete* un_paquete = crear_super_paquete(LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA);
+    cargar_string_al_super_paquete(un_paquete, valor);
     enviar_paquete(un_paquete, socket);
     eliminar_paquete(un_paquete);
 
@@ -117,8 +117,8 @@ void _enviar_string_por_lectura(char* valor, int socket){
 void _enviar_valor_por_lectura(void* valor, int socket, size_t tamanio){
     // M -> CPU : [void* valor]
     retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA);
-    __cargar_choclo_al_super_paquete(un_paquete, valor, tamanio);
+	t_paquete* un_paquete = crear_super_paquete(LECTURA_BLOQUE_ENTRADASALIDA_MEMORIA);
+    cargar_choclo_al_super_paquete(un_paquete, valor, tamanio);
     enviar_paquete(un_paquete, socket);
     eliminar_paquete(un_paquete);
 

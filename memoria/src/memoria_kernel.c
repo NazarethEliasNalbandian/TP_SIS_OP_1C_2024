@@ -9,11 +9,11 @@ void atender_memoria_kernel(){
 		int cod_op = recibir_operacion(fd_kernel);
 		switch (cod_op) {
 			case ESTRUCTURA_INICIADA_KERNEL_MEMORIA://[char* path][int pid]
-				unBuffer = __recibiendo_super_paquete(fd_kernel);
+				unBuffer = recibir_paquete(fd_kernel);
 				iniciar_estructura_para_un_proceso_nuevo(unBuffer);
 				break;
 			case ESTRUCTURA_LIBERADA_KERNEL_MEMORIA: //[int pid]
-				unBuffer = __recibiendo_super_paquete(fd_kernel);
+				unBuffer = recibir_paquete(fd_kernel);
 				eliminar_proceso_y_liberar_estructuras(unBuffer);
 				break;
 			case -1:
@@ -30,8 +30,8 @@ void atender_memoria_kernel(){
 }
 
 void iniciar_estructura_para_un_proceso_nuevo(t_buffer* un_Buffer){
-	char* path = __recibir_string_del_buffer(un_Buffer);
-	int pid = __recibir_int_del_buffer(un_Buffer);
+	char* path = recibir_string_del_buffer(un_Buffer);
+	int pid = recibir_int_del_buffer(un_Buffer);
 
 	destruir_buffer(un_Buffer);
 	
@@ -52,7 +52,7 @@ void iniciar_estructura_para_un_proceso_nuevo(t_buffer* un_Buffer){
 }
 
 void eliminar_proceso_y_liberar_estructuras(t_buffer* unBuffer){
-	int pid = __recibir_int_del_buffer(unBuffer);
+	int pid = recibir_int_del_buffer(unBuffer);
 	t_proceso* un_proceso = obtener_proceso_por_id(pid);
 
 	destruir_buffer(unBuffer);
@@ -81,16 +81,16 @@ void eliminar_proceso_y_liberar_estructuras(t_buffer* unBuffer){
 
 void responder_a_kernel_confirmacion_del_proceso_creado(){
 	retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(ESTRUCTURA_INICIADA_KERNEL_MEMORIA);
-	__cargar_string_al_super_paquete(un_paquete, "Proceso creado");
+	t_paquete* un_paquete = crear_super_paquete(ESTRUCTURA_INICIADA_KERNEL_MEMORIA);
+	cargar_string_al_super_paquete(un_paquete, "Proceso creado");
 	enviar_paquete(un_paquete, fd_kernel);
 	eliminar_paquete(un_paquete);
 }
 
 void enviar_a_kernel_rpta_de_eliminacion_de_proceso(){
 	retardo_respuesta();
-	t_paquete* un_paquete = __crear_super_paquete(ESTRUCTURA_LIBERADA_KERNEL_MEMORIA);
-	__cargar_string_al_super_paquete(un_paquete, "Estructura liberada");
+	t_paquete* un_paquete = crear_super_paquete(ESTRUCTURA_LIBERADA_KERNEL_MEMORIA);
+	cargar_string_al_super_paquete(un_paquete, "Estructura liberada");
 	enviar_paquete(un_paquete, fd_kernel);
 	eliminar_paquete(un_paquete);
 }

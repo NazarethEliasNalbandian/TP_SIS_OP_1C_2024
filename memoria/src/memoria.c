@@ -5,10 +5,10 @@ int main(int argc, char* argv[]) {
 	char* archivo_config = argv[1];
 	inicializar_memoria(archivo_config);
 
-	fd_memoria = _iniciar_servidor(PUERTO_ESCUCHA, memoria_log_debug, "MEMORIA INICIADA");
+	fd_memoria = iniciar_servidor(PUERTO_ESCUCHA, memoria_log_debug, "MEMORIA INICIADA");
 
 	log_info(memoria_log_debug, "ESPERANDO A CPU");
-	fd_cpu = _esperar_cliente(fd_memoria, memoria_log_debug, "CPU");
+	fd_cpu = esperar_cliente(fd_memoria, memoria_log_debug, "CPU");
 
 	// // ATENDER LOS MENSAJES DE CPU
 	pthread_t hilo_cpu;
@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 	pthread_detach(hilo_cpu);
 
 	log_info(memoria_log_debug, "ESPERANDO A KERNEL");
-	fd_kernel = _esperar_cliente(fd_memoria, memoria_log_debug, "KERNEL");
+	fd_kernel = esperar_cliente(fd_memoria, memoria_log_debug, "KERNEL");
 
 	// ATENDER LOS MENSAJES DE KERNEL
 	pthread_t hilo_kernel;
@@ -44,7 +44,7 @@ void escuchar_ES(){
 int server_escucha_entrada_salida(){
 	log_info(memoria_log_debug, "ESCUCHANDO ENTRADA SALIDA");
 
-	int fd_entradasalida = _esperar_cliente(fd_memoria, memoria_log_debug, "ENTRADA SALIDA");
+	int fd_entradasalida = esperar_cliente(fd_memoria, memoria_log_debug, "ENTRADA SALIDA");
 	if(fd_entradasalida != -1){
 
 		t_instancia_io* nueva_instancia = malloc(sizeof(t_instancia_io));
